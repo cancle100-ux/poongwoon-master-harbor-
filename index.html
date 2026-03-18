@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>스탯허브 — 하버·풍운FC</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
 :root{--bg:#f4f3ef;--bg2:#fff;--border:#e4e2da;--text:#1a1a18;--muted:#888780;--green:#3B6D11;--green2:#639922;--teal:#1D9E75;--gold:#BA7517;--gold2:#EF9F27;--red:#D85A30;--red2:#A32D2D;--blue:#185FA5;--blue2:#378ADD;--harbor:#1a3a1a;--pungwoon:#3a1a2a;--radius:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -816,10 +814,17 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 
 // ============== INIT ==============
 document.getElementById('pw-mdate').value=new Date().toISOString().slice(0,10);
-Chart.register(ChartDataLabels);
-refreshData();
-renderPW();
-renderRival();
+// Chart.js 로드 후 초기화
+function initApp(){
+  if(typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined'){
+    Chart.register(ChartDataLabels);
+  }
+  refreshData();
+  renderPW();
+  renderRival();
+}
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" onload="window._chartLoaded=true;if(window._dlLoaded)initApp();" onerror="initApp();"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" onload="window._dlLoaded=true;if(window._chartLoaded)initApp();" onerror="if(window._chartLoaded)initApp();"></script>
 </body>
 </html>
