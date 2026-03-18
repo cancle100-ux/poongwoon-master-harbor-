@@ -323,6 +323,29 @@ function parseMaster(rows){
 }
 
 // ============== HARBOR PARSE ==============
+const HB_ROUNDS=[
+  {round:'9라운드',date:'2026-03-17',matches:[
+    {num:1,opp:'한울',gf:1,ga:2,scorers:[{name:'신관수',og:true}],assists:[]},
+    {num:2,opp:'터틀파크',gf:2,ga:1,scorers:[{name:'정경훈'},{name:'주건호'}],assists:[{name:'주건호',for:'정경훈'}]},
+    {num:3,opp:'아이콘',gf:0,ga:4,scorers:[],assists:[]},
+    {num:4,opp:'터틀파크',gf:1,ga:0,scorers:[{name:'정경훈'}],assists:[{name:'주건호',for:'정경훈'}]},
+    {num:5,opp:'아이콘',gf:0,ga:2,scorers:[],assists:[]},
+    {num:6,opp:'한울',gf:4,ga:2,scorers:[{name:'주건호'},{name:'주건호'},{name:'선효림'},{name:'김의선'}],assists:[]},
+    {num:7,opp:'—',gf:0,ga:0,scorers:[],assists:[]},
+    {num:8,opp:'—',gf:0,ga:0,scorers:[],assists:[]},
+  ]},
+  {round:'8라운드',date:'2026-03-10',matches:[
+    {num:1,opp:'터틀파크',gf:3,ga:1,scorers:[{name:'박동휘'},{name:'박동휘'},{name:'주건호'}],assists:[]},
+    {num:2,opp:'한울',gf:2,ga:2,scorers:[{name:'강지선'},{name:'김형욱'}],assists:[]},
+    {num:3,opp:'아이콘',gf:1,ga:1,scorers:[{name:'김준식'}],assists:[]},
+    {num:4,opp:'터틀파크',gf:2,ga:0,scorers:[{name:'주건호'},{name:'이기세'}],assists:[]},
+    {num:5,opp:'한울',gf:3,ga:1,scorers:[{name:'박동휘'},{name:'강지선'},{name:'최진서'}],assists:[]},
+    {num:6,opp:'아이콘',gf:0,ga:2,scorers:[],assists:[]},
+    {num:7,opp:'—',gf:0,ga:0,scorers:[],assists:[]},
+    {num:8,opp:'—',gf:0,ga:0,scorers:[],assists:[]},
+  ]},
+];
+
 function parseHarbor(rows){
   const d={date:'',round:'',players:[],vs:[],topScorers:{},chem:[],half:[]};
   if(rows[0]){
@@ -352,6 +375,8 @@ function parseHarbor(rows){
   for(let i=0;i<rows.length;i++){const r=rows[i];if(r[19]&&r[22]&&r[22].includes('%')&&r[19]!=='득점자')d.chem.push({s:r[19],a:r[20]||'단독',p:r[22]});}
   let hh=false;
   for(let i=0;i<rows.length;i++){const r=rows[i];if(r[15]==='선수명'&&r[16]==='전반'){hh=true;continue;}if(hh&&r[15]&&r[19]&&r[19].includes('%'))d.half.push({name:r[15],f:+r[16]||0,s:+r[17]||0,t:+r[18]||0,fp:parseFloat(r[19])||0,sp:parseFloat(r[20])||0});}
+  // 경기 결과는 하드코딩 (구글 시트 하버FC 오늘의경기 탭 미연동)
+  d.rounds=HB_ROUNDS;
   return d;
 }
 
@@ -429,12 +454,25 @@ function hbMatchSection(d){
         const badgeBg={W:'#EAF3DE',D:'#F1EFE8',L:'#FCEBEB',E:'var(--bg)'}[res];
         const badgeFc={W:'var(--green)',D:'#5F5E5A',L:'var(--red2)',E:'var(--muted)'}[res];
         const badge={W:'승',D:'무',L:'패',E:'—'}[res];
-        return`<div style="background:#fff;border:1.5px solid ${borderC};border-radius:12px;padding:12px 8px;text-align:center;transition:all .15s">
+        const scorerMap={};
+        (m.scorers||[]).forEach(s=>{const k=s.og?`${s.name}(자책)`:s.name;scorerMap[k]=(scorerMap[k]||0)+1;});
+        const scorerStr=Object.entries(scorerMap).map(([n,c])=>c>1?`${n}×${c}`:n).join(', ');
+        const assistMap={};
+        (m.assists||[]).forEach(a=>{assistMap[a.name]=(assistMap[a.name]||0)+1;});
+        const assistStr=Object.entries(assistMap).map(([n,c])=>c>1?`${n}×${c}`:n).join(', ');
+        return`<div style="background:#fff;border:1.5px solid ${borderC};border-radius:12px;padding:12px 8px;text-align:center">
           <div style="font-size:10px;color:var(--muted);margin-bottom:5px">경기 ${m.num}</div>
           <div style="font-size:14px;font-weight:700;margin-bottom:7px;color:var(--text)">${isEmpty?'—':m.opp}</div>
           <div style="font-size:22px;font-weight:700;color:${scoreC};line-height:1;margin-bottom:6px">${m.gf}–${m.ga}</div>
           <span style="background:${badgeBg};color:${badgeFc};font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;display:inline-block">${badge}</span>
-          ${m.note&&!isEmpty?`<div style="font-size:10px;color:var(--muted);margin-top:7px;line-height:1.4;word-break:keep-all">${m.note}</div>`:''}
+          ${!isEmpty&&scorerStr?`<div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:2px">⚽ 득점</div>
+            <div style="font-size:11px;font-weight:700;color:var(--green);line-height:1.4;word-break:keep-all">${scorerStr}</div>
+          </div>`:''}
+          ${!isEmpty&&assistStr?`<div style="margin-top:5px">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:2px">🎯 어시</div>
+            <div style="font-size:11px;color:var(--teal);line-height:1.4;word-break:keep-all">${assistStr}</div>
+          </div>`:''}
         </div>`;
       }).join('')}
     </div>
