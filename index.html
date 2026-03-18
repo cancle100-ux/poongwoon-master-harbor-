@@ -19,6 +19,8 @@ body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto 
 .last-upd{font-size:10px;opacity:.7;color:#fff;white-space:nowrap;}
 .nav.harbor{background:var(--harbor);}
 .nav.harbor .nav-logo,.nav.harbor .nav-tab{color:#9FE1CB;}
+.nav.master{background:#1a2a4a;}
+.nav.master .nav-logo,.nav.master .nav-tab{color:#90caf9;}
 .nav.pungwoon{background:var(--pungwoon);}
 .nav.pungwoon .nav-logo,.nav.pungwoon .nav-tab{color:#f8bbd9;}
 .nav.rival{background:#2a1a0a;}
@@ -113,6 +115,7 @@ tbody tr:hover{background:var(--bg);}
 <nav class="nav harbor" id="main-nav">
   <div class="nav-logo">🏆 스탯허브</div>
   <div class="nav-tab active" onclick="showTeam('harbor',this)">⚽ 하버FC</div>
+  <div class="nav-tab" onclick="showTeam('master',this)">🔵 마스터FC</div>
   <div class="nav-tab" onclick="showTeam('pungwoon',this)">🌟 풍운FC</div>
   <div class="nav-tab" onclick="showTeam('rival',this)">🔥 박주대전</div>
   <div class="nav-right">
@@ -127,6 +130,14 @@ tbody tr:hover{background:var(--bg);}
     <div style="font-size:12px;color:var(--muted);margin-top:2px">화요일 정기전 · 이벤트 매치 · 구글 시트 실시간</div></div>
   </div>
   <div id="harbor-content"><div class="loading-state"><div class="spin">⚽</div><p style="margin-top:10px">로딩 중...</p></div></div>
+</div>
+
+<div class="page" id="page-master">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div><div style="font-size:20px;font-weight:700">🔵 마스터FC 대시보드</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">목요일 정기전 · 포인트 로그 실시간</div></div>
+  </div>
+  <div id="master-content"><div class="loading-state"><div class="spin">⚽</div><p style="margin-top:10px">로딩 중...</p></div></div>
 </div>
 
 <div class="page" id="page-pungwoon">
@@ -224,7 +235,8 @@ tbody tr:hover{background:var(--bg);}
 <script>
 const SHEET_ID='1cM4UhB-nL6smf4OIn_lqQ0on1AtYG2ff_haIXBvXnK0';
 const GID_HDASH='1445436566';
-let CH={},HD=null,RT=null;
+const GID_MLOG='827166085';
+let CH={},HD=null,MD=null,RT=null;
 
 // ============== NAV ==============
 function showTeam(t,el){
@@ -234,6 +246,7 @@ function showTeam(t,el){
   el.classList.add('active');
   document.getElementById('main-nav').className='nav '+t;
   if(t==='harbor'&&!HD)refreshData();
+  if(t==='master'){if(!MD)loadMaster();else renderMaster();}
   if(t==='pungwoon')renderPW();
   if(t==='rival')renderRival();
 }
@@ -282,6 +295,159 @@ async function refreshData(){
     document.getElementById('last-upd').textContent='⚠️ 오프라인';
     console.warn(e);
   }finally{if(btn){btn.textContent='🔄';btn.disabled=false;}}
+}
+
+// ============== MASTER FC ==============
+async function loadMaster(){
+  document.getElementById('master-content').innerHTML='<div class="loading-state"><div class="spin">⚽</div><p style="margin-top:10px">마스터FC 데이터 불러오는 중...</p></div>';
+  try{
+    const rows=await fetchTab(GID_MLOG);
+    MD=parseMaster(rows);
+    renderMaster();
+  }catch(e){
+    document.getElementById('master-content').innerHTML='<div class="err-box">⚠️ 데이터 불러오기 실패: '+e.message+'</div>';
+  }
+}
+
+function parseMaster(rows){
+  // 헤더: A=경기일자, B=선수명, C=골, D=어시, E=역주행, F=실점, G=클린시트, H=크로바, I=고구마, J=키퍼경기수
+  const players={}, dates=new Set();
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i];
+    if(!r[1]||r[1]==='선수명'||!r[0]||r[0]==='경기일자')continue;
+    const date=r[0].trim(), name=r[1].trim();
+    if(!name||!date)continue;
+    dates.add(date);
+    if(!players[name])players[name]={name,goals:0,assists:0,own:0,conceded:0,clean:0,clover:0,potato:0,keeperG:0,dates:new Set(),pts:0};
+    const p=players[name];
+    p.goals+=+r[2]||0;
+    p.assists+=+r[3]||0;
+    p.own+=+r[4]||0;
+    p.conceded+=+r[5]||0;
+    p.clean+=+r[6]||0;
+    p.clover+=+r[7]||0;
+    p.potato+=+r[8]||0;
+    p.keeperG+=+r[9]||0;
+    p.dates.add(date);
+  }
+  // 포인트 계산: 골+어시+클린시트+크로바+고구마
+  Object.values(players).forEach(p=>{
+    p.pts=p.goals+p.assists+p.clean+p.clover+p.potato;
+    p.games=p.dates.size;
+    delete p.dates;
+  });
+  const sortedDates=[...dates].sort((a,b)=>b.localeCompare(a));
+  return{players:Object.values(players),dates:sortedDates,latestDate:sortedDates[0]||''};
+}
+
+function renderMaster(){
+  const d=MD;
+  if(!d||!d.players.length){
+    document.getElementById('master-content').innerHTML='<div class="err-box">데이터가 없습니다</div>';return;
+  }
+  dch(['mc-g','mc-a','mc-p','mc-cs']);
+  const pl=d.players;
+  const totalGoals=pl.reduce((s,p)=>s+p.goals,0);
+  const totalAsts=pl.reduce((s,p)=>s+p.assists,0);
+  const totalCS=pl.reduce((s,p)=>s+p.clean,0);
+  const gS=[...pl].sort((a,b)=>b.goals-a.goals).filter(p=>p.goals>0).slice(0,10);
+  const aS=[...pl].sort((a,b)=>b.assists-a.assists).filter(p=>p.assists>0).slice(0,10);
+  const pS=[...pl].sort((a,b)=>b.pts-a.pts).filter(p=>p.pts>0).slice(0,10);
+  const cS=[...pl].sort((a,b)=>b.clean-a.clean).filter(p=>p.clean>0).slice(0,8);
+  const cloverS=[...pl].sort((a,b)=>b.clover-a.clover).filter(p=>p.clover>0).slice(0,5);
+  const sessions=d.dates.length;
+
+  document.getElementById('master-content').innerHTML=`
+    <div class="stat-row s4">
+      <div class="s-card"><div class="s-label">총 세션</div><div class="s-val" style="color:var(--blue2)">${sessions}</div></div>
+      <div class="s-card"><div class="s-label">총 득점</div><div class="s-val" style="color:var(--green)">${totalGoals}</div></div>
+      <div class="s-card"><div class="s-label">클린시트</div><div class="s-val" style="color:var(--teal)">${totalCS}</div></div>
+      <div class="s-card"><div class="s-label">등록 선수</div><div class="s-val" style="color:var(--gold)">${pl.length}명</div></div>
+    </div>
+
+    <!-- 득점 / 어시 차트 -->
+    <div class="two-col">
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--green2)"></span>득점 순위</div>
+        <div style="position:relative;width:100%;height:${gS.length*34+20}px"><canvas id="mc-g"></canvas></div></div>
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>어시스트 순위</div>
+        <div style="position:relative;width:100%;height:${aS.length*34+20}px"><canvas id="mc-a"></canvas></div></div>
+    </div>
+
+    <!-- 공격 포인트 -->
+    <div class="panel mb16">
+      <div class="panel-title"><span class="dot" style="background:var(--gold)"></span>총 포인트 순위
+        <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px">골+어시+클린+크로바+고구마</span></div>
+      ${pS.map((p,i)=>{
+        const c=['#1565C0','#1976D2','#1E88E5','#2196F3','#42A5F5','#64B5F6','#90CAF9','#BBDEFB','#BBDEFB','#BBDEFB'][i]||'#BBDEFB';
+        return`<div class="rank-row">
+          <span class="rk-num">${i+1}</span>
+          <span class="rk-name">${p.name}</span>
+          <span class="rk-detail">${p.goals}골 ${p.assists}어 ${p.clean}CS</span>
+          <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(p.pts/pS[0].pts*100)}%;background:${c}"></div></div>
+          <span class="rk-val" style="color:var(--blue2)">${p.pts}</span>
+        </div>`;}).join('')}
+    </div>
+
+    <!-- 클린시트 + 크로바 -->
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><span class="dot" style="background:var(--teal)"></span>클린시트 순위</div>
+        ${cS.map((p,i)=>`<div class="rank-row">
+          <span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
+          <span class="rk-detail">${p.keeperG}키퍼경기</span>
+          <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(p.clean/cS[0].clean*100)}%;background:var(--teal)"></div></div>
+          <span class="rk-val" style="color:var(--teal)">${p.clean}</span>
+        </div>`).join('')}
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="dot" style="background:#9C27B0"></span>🍀 크로바 순위</div>
+        ${cloverS.length?cloverS.map((p,i)=>`<div class="rank-row">
+          <span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
+          <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(p.clover/cloverS[0].clover*100)}%;background:#9C27B0"></div></div>
+          <span class="rk-val" style="color:#9C27B0">${p.clover}</span>
+        </div>`).join(''):'<div style="color:var(--muted);font-size:12px">데이터 없음</div>'}
+        <hr class="div">
+        <div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:var(--red2)"></span>🍠 고구마 (감점)</div>
+        ${[...pl].sort((a,b)=>a.potato-b.potato).filter(p=>p.potato<0).slice(0,5).map((p,i)=>`
+          <div class="rank-row"><span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
+          <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(Math.abs(p.potato)/3*100)}%;background:var(--red)"></div></div>
+          <span class="rk-val" style="color:var(--red)">${p.potato}</span></div>`).join('')||'<div style="color:var(--muted);font-size:12px">없음 😊</div>'}
+      </div>
+    </div>
+
+    <!-- 전체 선수 테이블 -->
+    <div class="panel">
+      <div class="panel-title"><span class="dot" style="background:var(--muted)"></span>전체 선수 스탯 · 최신 ${d.latestDate}</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>이름</th><th>세션</th><th>골</th><th>어시</th><th>클린</th><th>크로바</th><th>고구마</th><th>실점</th><th>포인트</th></tr></thead>
+        <tbody>${[...pl].sort((a,b)=>b.pts-a.pts).map(p=>`<tr>
+          <td>${p.name}</td>
+          <td style="color:var(--muted)">${p.games}</td>
+          <td style="color:var(--green);font-weight:700">${p.goals||'—'}</td>
+          <td style="color:var(--teal);font-weight:700">${p.assists||'—'}</td>
+          <td>${p.clean||'—'}</td>
+          <td style="color:#9C27B0;font-weight:700">${p.clover||'—'}</td>
+          <td style="color:${p.potato<0?'var(--red)':'var(--muted)'}">${p.potato||'—'}</td>
+          <td style="color:${p.conceded>0?'var(--red2)':'var(--muted)'}">${p.conceded||'—'}</td>
+          <td style="color:var(--blue2);font-weight:700">${p.pts||'—'}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+  `;
+
+  setTimeout(()=>{
+    const tc='#5f5e5a',gc='rgba(0,0,0,0.06)';
+    const bO={indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},datalabels:{anchor:'end',align:'end',color:'#5f5e5a',font:{size:11,weight:'600'},formatter:v=>v},
+        tooltip:{callbacks:{label:c=>' '+c.parsed.x}}},
+      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11}},beginAtZero:true},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}},
+      layout:{padding:{right:30}}};
+    if(gS.length&&document.getElementById('mc-g'))
+      CH['mc-g']=new Chart(document.getElementById('mc-g'),{type:'bar',data:{labels:gS.map(p=>p.name),datasets:[{data:gS.map(p=>p.goals),backgroundColor:gS.map((_,i)=>['#3B6D11','#639922','#97C459','#C0DD97','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE'][i]||'#EAF3DE'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
+    if(aS.length&&document.getElementById('mc-a'))
+      CH['mc-a']=new Chart(document.getElementById('mc-a'),{type:'bar',data:{labels:aS.map(p=>p.name),datasets:[{data:aS.map(p=>p.assists),backgroundColor:aS.map((_,i)=>['#085041','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB'][i]||'#9FE1CB'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
+  },50);
 }
 
 // ============== HARBOR PARSE ==============
