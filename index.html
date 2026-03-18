@@ -243,7 +243,7 @@ function showTeam(t,el){
 // ============== FETCH ==============
 async function fetchTab(gid){
   const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(),10000);
+  const t=setTimeout(()=>ctrl.abort(),4000);
   const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&t=${Date.now()}`;
   const res=await fetch(url,{signal:ctrl.signal,mode:'cors'});
   clearTimeout(t);
@@ -272,6 +272,8 @@ function parseCSV(txt){
 async function refreshData(){
   const btn=document.getElementById('sync-btn');
   btn.textContent='⏳';btn.disabled=true;
+  // 즉시 fallback으로 먼저 렌더링
+  if(!HD){HD=hbFallback();renderHarbor();}
   try{
     const hRows=await fetchTab(GID_HDASH);
     HD=parseHarbor(hRows);
@@ -281,8 +283,7 @@ async function refreshData(){
     if(RT)clearInterval(RT);
     RT=setInterval(refreshData,5*60*1000);
   }catch(e){
-    document.getElementById('last-upd').textContent='⚠️ 실패';
-    if(!HD){HD=hbFallback();renderHarbor();}
+    document.getElementById('last-upd').textContent='⚠️ 오프라인';
     console.warn(e);
   }finally{btn.textContent='🔄';btn.disabled=false;}
 }
