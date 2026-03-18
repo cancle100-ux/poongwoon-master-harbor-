@@ -107,7 +107,13 @@ tbody td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--border)
 tbody td:first-child{text-align:left;font-weight:700;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover{background:var(--bg);}
-@media(max-width:600px){.stat-row.s4,.stat-row.s5,.stat-row.s6{grid-template-columns:repeat(3,1fr);}.two-col,.three-col{grid-template-columns:1fr;}.rival-grid{grid-template-columns:1fr 40px 1fr;}}
+@media(max-width:600px){
+  .stat-row.s4,.stat-row.s5,.stat-row.s6{grid-template-columns:repeat(3,1fr);}
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .rival-grid{grid-template-columns:1fr 40px 1fr;}
+}
+.match-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+@media(max-width:600px){.match-grid{grid-template-columns:repeat(2,1fr);gap:8px;}}
 </style>
 </head>
 <body>
@@ -519,94 +525,65 @@ function hbFallback(){return{date:'2026-03-17',round:'9라운드',players:[
 ],vs:[{opp:'아이콘',games:18,w:3,d:9,l:6,gf:16,ga:20},{opp:'터틀파크',games:18,w:13,d:3,l:2,gf:35,ga:11},{opp:'한울',games:17,w:12,d:4,l:1,gf:37,ga:9}],
 topScorers:{'한울':[{name:'주건호',goals:8},{name:'강지선',goals:3},{name:'김준식',goals:3},{name:'김형욱',goals:3},{name:'박동휘',goals:3}],'터틀파크':[{name:'박동휘',goals:8},{name:'주건호',goals:5},{name:'이기세',goals:3},{name:'정경훈',goals:3},{name:'강지선',goals:2}],'아이콘':[{name:'김준식',goals:4},{name:'주건호',goals:3},{name:'김형욱',goals:2},{name:'박동휘',goals:2},{name:'조재상',goals:2}]},
 chem:[{s:'주건호',a:'↔ 김형욱',p:'11.8%'},{s:'박동휘',a:'↔ 주건호',p:'21.4%'},{s:'김형욱',a:'↔ 주건호',p:'57.1%'}],half:[],
-rounds:[
-  {round:'9라운드',date:'2026-03-17',matches:[
-    {num:1,opp:'한울',gf:1,ga:2,note:'자책 신관수'},
-    {num:2,opp:'터틀파크',gf:2,ga:1,note:'정경훈·주건호'},
-    {num:3,opp:'아이콘',gf:0,ga:4,note:'실점 선효림 ×4'},
-    {num:4,opp:'터틀파크',gf:1,ga:0,note:'정경훈/어시 주건호'},
-    {num:5,opp:'아이콘',gf:0,ga:2,note:'실점 선효림 ×2'},
-    {num:6,opp:'한울',gf:4,ga:2,note:'주건호×2 선효림 김의선'},
-    {num:7,opp:'—',gf:0,ga:0,note:''},
-    {num:8,opp:'—',gf:0,ga:0,note:''},
-  ]},
-  {round:'8라운드',date:'2026-03-10',matches:[
-    {num:1,opp:'터틀파크',gf:3,ga:1,note:'박동휘×2 주건호'},
-    {num:2,opp:'한울',gf:2,ga:2,note:'강지선·김형욱'},
-    {num:3,opp:'아이콘',gf:1,ga:1,note:'김준식'},
-    {num:4,opp:'터틀파크',gf:2,ga:0,note:'주건호·이기세'},
-    {num:5,opp:'한울',gf:3,ga:1,note:'박동휘·강지선·최진서'},
-    {num:6,opp:'아이콘',gf:0,ga:2,note:'실점 선효림 ×2'},
-    {num:7,opp:'—',gf:0,ga:0,note:''},
-    {num:8,opp:'—',gf:0,ga:0,note:''},
-  ]},
-]};}
+rounds:HB_ROUNDS};}
 
 let hbRoundIdx=0;
 
 function hbMatchSection(d){
   const rounds=d.rounds||[];
   if(!rounds.length)return'';
-  const r=rounds[hbRoundIdx]||rounds[0];
-  const totalGF=r.matches.filter(m=>m.opp!=='—').reduce((s,m)=>s+m.gf,0);
-  const totalGA=r.matches.filter(m=>m.opp!=='—').reduce((s,m)=>s+m.ga,0);
-  const wCount=r.matches.filter(m=>m.opp!=='—'&&m.gf>m.ga).length;
-  const dCount=r.matches.filter(m=>m.opp!=='—'&&m.gf===m.ga).length;
-  const lCount=r.matches.filter(m=>m.opp!=='—'&&m.gf<m.ga).length;
-  const hasPrev=hbRoundIdx>0;
-  const hasNext=hbRoundIdx<rounds.length-1;
+  // 가장 최근 라운드만 표시
+  const r=rounds[0];
+  const realMatches=r.matches.filter(m=>m.opp!=='—');
+  if(!realMatches.length)return'';
+  const totalGF=realMatches.reduce((s,m)=>s+m.gf,0);
+  const totalGA=realMatches.reduce((s,m)=>s+m.ga,0);
+  const wCount=realMatches.filter(m=>m.gf>m.ga).length;
+  const dCount=realMatches.filter(m=>m.gf===m.ga).length;
+  const lCount=realMatches.filter(m=>m.gf<m.ga).length;
   return`<div class="panel mb16">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <div class="panel-title" style="margin-bottom:0"><span class="dot" style="background:#185FA5"></span>경기 결과</div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <button onclick="hbRoundIdx=Math.max(0,hbRoundIdx-1);renderHarbor()" ${!hasPrev?'disabled':''} style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:${hasPrev?'var(--bg2)':'var(--bg)'};color:${hasPrev?'var(--text)':'var(--muted)'};cursor:${hasPrev?'pointer':'default'};font-size:14px;display:flex;align-items:center;justify-content:center">‹</button>
-        <div style="font-size:12px;font-weight:700;min-width:80px;text-align:center">${r.round}</div>
-        <button onclick="hbRoundIdx=Math.min(${rounds.length-1},hbRoundIdx+1);renderHarbor()" ${!hasNext?'disabled':''} style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:${hasNext?'var(--bg2)':'var(--bg)'};color:${hasNext?'var(--text)':'var(--muted)'};cursor:${hasNext?'pointer':'default'};font-size:14px;display:flex;align-items:center;justify-content:center">›</button>
-      </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="panel-title" style="margin-bottom:0"><span class="dot" style="background:#185FA5"></span>최근 경기 결과</div>
+      <div style="font-size:12px;font-weight:700;color:var(--blue2)">${r.round} · ${r.date}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:12px;color:var(--muted);flex-wrap:wrap">
-      <span>📅 ${r.date}</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12px;color:var(--muted)">
       <span>득점 <strong style="color:var(--green)">${totalGF}</strong> · 실점 <strong style="color:var(--red)">${totalGA}</strong></span>
-      <span style="display:inline-flex;gap:6px">
+      <span style="display:inline-flex;gap:5px">
         <span style="background:#EAF3DE;color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">${wCount}승</span>
         <span style="background:#F1EFE8;color:#5F5E5A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">${dCount}무</span>
         <span style="background:#FCEBEB;color:var(--red2);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">${lCount}패</span>
       </span>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-      ${r.matches.map(m=>{
-        const isEmpty=m.opp==='—';
-        const res=isEmpty?'E':m.gf>m.ga?'W':m.gf<m.ga?'L':'D';
-        const borderC={W:'#639922',D:'#c8c5bb',L:'#D85A30',E:'#e4e2da'}[res];
-        const scoreC={W:'var(--green)',D:'var(--muted)',L:'var(--red)',E:'var(--muted)'}[res];
-        const badgeBg={W:'#EAF3DE',D:'#F1EFE8',L:'#FCEBEB',E:'var(--bg)'}[res];
-        const badgeFc={W:'var(--green)',D:'#5F5E5A',L:'var(--red2)',E:'var(--muted)'}[res];
-        const badge={W:'승',D:'무',L:'패',E:'—'}[res];
+    <div class="match-grid">
+      ${realMatches.map(m=>{
+        const res=m.gf>m.ga?'W':m.gf<m.ga?'L':'D';
+        const borderC={W:'#639922',D:'#c8c5bb',L:'#D85A30'}[res];
+        const scoreC={W:'var(--green)',D:'var(--muted)',L:'var(--red)'}[res];
+        const badgeBg={W:'#EAF3DE',D:'#F1EFE8',L:'#FCEBEB'}[res];
+        const badgeFc={W:'var(--green)',D:'#5F5E5A',L:'var(--red2)'}[res];
+        const badge={W:'승',D:'무',L:'패'}[res];
         const scorerMap={};
         (m.scorers||[]).forEach(s=>{const k=s.og?`${s.name}(자책)`:s.name;scorerMap[k]=(scorerMap[k]||0)+1;});
         const scorerStr=Object.entries(scorerMap).map(([n,c])=>c>1?`${n}×${c}`:n).join(', ');
         const assistMap={};
         (m.assists||[]).forEach(a=>{assistMap[a.name]=(assistMap[a.name]||0)+1;});
         const assistStr=Object.entries(assistMap).map(([n,c])=>c>1?`${n}×${c}`:n).join(', ');
-        return`<div style="background:#fff;border:1.5px solid ${borderC};border-radius:12px;padding:12px 8px;text-align:center">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:5px">경기 ${m.num}</div>
-          <div style="font-size:14px;font-weight:700;margin-bottom:7px;color:var(--text)">${isEmpty?'—':m.opp}</div>
-          <div style="font-size:22px;font-weight:700;color:${scoreC};line-height:1;margin-bottom:6px">${m.gf}–${m.ga}</div>
-          <span style="background:${badgeBg};color:${badgeFc};font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;display:inline-block">${badge}</span>
-          ${!isEmpty&&scorerStr?`<div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)">
-            <div style="font-size:9px;color:var(--muted);margin-bottom:2px">⚽ 득점</div>
-            <div style="font-size:11px;font-weight:700;color:var(--green);line-height:1.4;word-break:keep-all">${scorerStr}</div>
+        return`<div style="background:#fff;border:1.5px solid ${borderC};border-radius:12px;padding:14px 10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">경기 ${m.num}</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px;word-break:keep-all;line-height:1.2">${m.opp}</div>
+          <div style="font-size:28px;font-weight:700;color:${scoreC};line-height:1;margin-bottom:8px;white-space:nowrap">${m.gf}–${m.ga}</div>
+          <span style="background:${badgeBg};color:${badgeFc};font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;display:inline-block">${badge}</span>
+          ${scorerStr?`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:3px">⚽ 득점</div>
+            <div style="font-size:12px;font-weight:700;color:var(--green);line-height:1.5;word-break:keep-all">${scorerStr}</div>
           </div>`:''}
-          ${!isEmpty&&assistStr?`<div style="margin-top:5px">
-            <div style="font-size:9px;color:var(--muted);margin-bottom:2px">🎯 어시</div>
-            <div style="font-size:11px;color:var(--teal);line-height:1.4;word-break:keep-all">${assistStr}</div>
+          ${assistStr?`<div style="margin-top:6px">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:3px">🎯 어시</div>
+            <div style="font-size:12px;color:var(--teal);line-height:1.5;word-break:keep-all">${assistStr}</div>
           </div>`:''}
         </div>`;
       }).join('')}
     </div>
-    ${rounds.length>1?`<div style="display:flex;justify-content:center;gap:5px;margin-top:14px">
-      ${rounds.map((_,i)=>`<div onclick="hbRoundIdx=${i};renderHarbor()" style="width:7px;height:7px;border-radius:50%;background:${i===hbRoundIdx?'var(--blue)':'var(--border)'};cursor:pointer;transition:all .2s"></div>`).join('')}
-    </div>`:''}
   </div>`;
 }
 // ============== RENDER HARBOR ==============
