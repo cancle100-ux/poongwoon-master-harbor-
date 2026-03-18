@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>스탯허브 — 마스터·하버·풍운FC</title>
+<title>스탯허브 — 하버·풍운FC</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
-:root{--bg:#f4f3ef;--bg2:#fff;--border:#e4e2da;--text:#1a1a18;--muted:#888780;--green:#3B6D11;--green2:#639922;--teal:#1D9E75;--gold:#BA7517;--gold2:#EF9F27;--red:#D85A30;--red2:#A32D2D;--blue:#185FA5;--blue2:#378ADD;--master:#1a2a4a;--harbor:#1a3a1a;--pungwoon:#3a1a2a;--radius:12px;}
+:root{--bg:#f4f3ef;--bg2:#fff;--border:#e4e2da;--text:#1a1a18;--muted:#888780;--green:#3B6D11;--green2:#639922;--teal:#1D9E75;--gold:#BA7517;--gold2:#EF9F27;--red:#D85A30;--red2:#A32D2D;--blue:#185FA5;--blue2:#378ADD;--harbor:#1a3a1a;--pungwoon:#3a1a2a;--radius:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);min-height:100vh;}
 .nav{display:flex;align-items:center;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.25);flex-wrap:wrap;}
@@ -19,8 +19,6 @@ body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto 
 .sync-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;}
 .sync-btn:hover{background:rgba(255,255,255,.2);}
 .last-upd{font-size:10px;opacity:.7;color:#fff;white-space:nowrap;}
-.nav.master{background:var(--master);}
-.nav.master .nav-logo,.nav.master .nav-tab{color:#90caf9;}
 .nav.harbor{background:var(--harbor);}
 .nav.harbor .nav-logo,.nav.harbor .nav-tab{color:#9FE1CB;}
 .nav.pungwoon{background:var(--pungwoon);}
@@ -114,27 +112,18 @@ tbody tr:hover{background:var(--bg);}
 </head>
 <body>
 
-<nav class="nav master" id="main-nav">
+<nav class="nav harbor" id="main-nav">
   <div class="nav-logo">🏆 스탯허브</div>
-  <div class="nav-tab active" onclick="showTeam('master',this)">🔵 마스터FC</div>
-  <div class="nav-tab" onclick="showTeam('harbor',this)">⚽ 하버FC</div>
+  <div class="nav-tab active" onclick="showTeam('harbor',this)">⚽ 하버FC</div>
   <div class="nav-tab" onclick="showTeam('pungwoon',this)">🌟 풍운FC</div>
-  <div class="nav-tab" onclick="showTeam('rival',this)">🔥 라이벌</div>
+  <div class="nav-tab" onclick="showTeam('rival',this)">🔥 박주대전</div>
   <div class="nav-right">
     <span class="last-upd" id="last-upd">—</span>
     <button class="sync-btn" id="sync-btn" onclick="refreshData()">🔄</button>
   </div>
 </nav>
 
-<div class="page active" id="page-master">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-    <div><div style="font-size:20px;font-weight:700">🔵 마스터FC 대시보드</div>
-    <div style="font-size:12px;color:var(--muted);margin-top:2px">목요일 정기전 · 팀전 내부리그 · 구글 시트 실시간</div></div>
-  </div>
-  <div id="master-content"><div class="loading-state"><div class="spin">⚽</div><p style="margin-top:10px">구글 시트 불러오는 중...</p></div></div>
-</div>
-
-<div class="page" id="page-harbor">
+<div class="page active" id="page-harbor">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
     <div><div style="font-size:20px;font-weight:700">⚽ 하버FC 대시보드</div>
     <div style="font-size:12px;color:var(--muted);margin-top:2px">화요일 정기전 · 이벤트 매치 · 구글 시트 실시간</div></div>
@@ -156,7 +145,7 @@ tbody tr:hover{background:var(--bg);}
 
 <div class="page" id="page-rival">
   <div class="rival-hdr">
-    <h1>🔥 2026 올해의 대결</h1>
+    <h1>🔥 박주대전 2026</h1>
     <p>연말 결산 · 진 사람이 밥값 낸다 🍽️</p>
   </div>
   <div id="rival-content"></div>
@@ -236,9 +225,8 @@ tbody tr:hover{background:var(--bg);}
 
 <script>
 const SHEET_ID='1cM4UhB-nL6smf4OIn_lqQ0on1AtYG2ff_haIXBvXnK0';
-const GID_MLOG='258427967';
 const GID_HDASH='1445436566';
-let CH={},MD=null,HD=null,RT=null;
+let CH={},HD=null,RT=null;
 
 // ============== NAV ==============
 function showTeam(t,el){
@@ -247,7 +235,6 @@ function showTeam(t,el){
   document.getElementById('page-'+t).classList.add('active');
   el.classList.add('active');
   document.getElementById('main-nav').className='nav '+t;
-  if(t==='master'&&!MD)refreshData();
   if(t==='harbor'&&!HD)refreshData();
   if(t==='pungwoon')renderPW();
   if(t==='rival')renderRival();
@@ -286,17 +273,15 @@ async function refreshData(){
   const btn=document.getElementById('sync-btn');
   btn.textContent='⏳';btn.disabled=true;
   try{
-    const [mRows,hRows]=await Promise.all([fetchTab(GID_MLOG),fetchTab(GID_HDASH)]);
-    MD=parseMaster(mRows);
+    const hRows=await fetchTab(GID_HDASH);
     HD=parseHarbor(hRows);
     const n=new Date();
     document.getElementById('last-upd').textContent=`${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} ✅`;
-    renderMaster();renderHarbor();
+    renderHarbor();
     if(RT)clearInterval(RT);
     RT=setInterval(refreshData,5*60*1000);
   }catch(e){
     document.getElementById('last-upd').textContent='⚠️ 실패';
-    if(!MD){MD={teams:{},players:{},matches:[],recent:[]};renderMaster();}
     if(!HD){HD=hbFallback();renderHarbor();}
     console.warn(e);
   }finally{btn.textContent='🔄';btn.disabled=false;}
@@ -379,9 +364,63 @@ function hbFallback(){return{date:'2026-03-17',round:'9라운드',players:[
   {num:'3',name:'신관수',games:27,field:26,keeper:1,goals:0,assists:3,clean:13,points:16,conceded:2,cr:'2.00'},
   {num:'31',name:'임기민',games:32,field:2,keeper:30,goals:0,assists:1,clean:14,points:15,conceded:21,cr:'0.70'},
 ],vs:[{opp:'아이콘',games:18,w:3,d:9,l:6,gf:16,ga:20},{opp:'터틀파크',games:18,w:13,d:3,l:2,gf:35,ga:11},{opp:'한울',games:17,w:12,d:4,l:1,gf:37,ga:9}],
-topScorers:{'한울':[{name:'주건호',goals:8},{name:'강지선',goals:3}],'터틀파크':[{name:'박동휘',goals:8},{name:'주건호',goals:5}],'아이콘':[{name:'김준식',goals:4},{name:'주건호',goals:3}]},
-chem:[{s:'주건호',a:'↔ 김형욱',p:'11.8%'},{s:'박동휘',a:'↔ 주건호',p:'21.4%'},{s:'김형욱',a:'↔ 주건호',p:'57.1%'}],half:[]};}
+topScorers:{'한울':[{name:'주건호',goals:8},{name:'강지선',goals:3},{name:'김준식',goals:3},{name:'김형욱',goals:3},{name:'박동휘',goals:3}],'터틀파크':[{name:'박동휘',goals:8},{name:'주건호',goals:5},{name:'이기세',goals:3},{name:'정경훈',goals:3},{name:'강지선',goals:2}],'아이콘':[{name:'김준식',goals:4},{name:'주건호',goals:3},{name:'김형욱',goals:2},{name:'박동휘',goals:2},{name:'조재상',goals:2}]},
+chem:[{s:'주건호',a:'↔ 김형욱',p:'11.8%'},{s:'박동휘',a:'↔ 주건호',p:'21.4%'},{s:'김형욱',a:'↔ 주건호',p:'57.1%'}],half:[],
+rounds:[
+  {round:'9라운드',date:'2026-03-17',matches:[
+    {num:1,opp:'한울',gf:1,ga:2,note:'자책 신관수'},
+    {num:2,opp:'터틀파크',gf:2,ga:1,note:'정경훈·주건호'},
+    {num:3,opp:'아이콘',gf:0,ga:4,note:'실점 선효림 ×4'},
+    {num:4,opp:'터틀파크',gf:1,ga:0,note:'정경훈/어시 주건호'},
+    {num:5,opp:'아이콘',gf:0,ga:2,note:'실점 선효림 ×2'},
+    {num:6,opp:'한울',gf:4,ga:2,note:'주건호×2 선효림 김의선'},
+    {num:7,opp:'—',gf:0,ga:0,note:''},
+    {num:8,opp:'—',gf:0,ga:0,note:''},
+  ]},
+]};}
 
+let hbRoundIdx=0;
+
+function hbMatchSection(d){
+  const rounds=d.rounds||[];
+  if(!rounds.length)return'';
+  const r=rounds[hbRoundIdx]||rounds[0];
+  const totalGF=r.matches.reduce((s,m)=>s+m.gf,0);
+  const totalGA=r.matches.reduce((s,m)=>s+m.ga,0);
+  const wCount=r.matches.filter(m=>m.gf>m.ga).length;
+  const dCount=r.matches.filter(m=>m.gf===m.ga&&m.opp!=='—').length;
+  const lCount=r.matches.filter(m=>m.gf<m.ga).length;
+  return`<div class="panel mb16">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div class="panel-title" style="margin-bottom:0"><span class="dot" style="background:#185FA5"></span>경기 결과</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${rounds.map((rv,i)=>`<button onclick="hbRoundIdx=${i};renderHarbor()" style="padding:4px 12px;border-radius:20px;border:1.5px solid ${i===hbRoundIdx?'var(--blue)':'var(--border)'};background:${i===hbRoundIdx?'var(--blue)':'transparent'};color:${i===hbRoundIdx?'#fff':'var(--muted)'};font-size:11px;font-weight:700;cursor:pointer;">${rv.round}</button>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;font-size:12px;color:var(--muted)">
+      <span>📅 ${r.date}</span>
+      <span style="margin-left:8px">득점 <strong style="color:var(--green)">${totalGF}</strong></span>
+      <span>실점 <strong style="color:var(--red)">${totalGA}</strong></span>
+      <span style="margin-left:4px">${wCount}승 ${dCount}무 ${lCount}패</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${r.matches.map(m=>{
+        const res=m.opp==='—'?'D':m.gf>m.ga?'W':m.gf<m.ga?'L':'D';
+        const sc={W:'var(--green)',D:'var(--muted)',L:'var(--red)'}[res];
+        const bg={W:'#EAF3DE',D:'#F1EFE8',L:'#FCEBEB'}[res];
+        const fc={W:'var(--green)',D:'#5F5E5A',L:'var(--red2)'}[res];
+        const rl={W:'승',D:'무',L:'패'}[res];
+        return`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">경기 ${m.num}</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px">${m.opp}</div>
+          <div style="font-size:22px;font-weight:700;color:${sc}">${m.gf}–${m.ga}</div>
+          <div style="background:${bg};color:${fc};font-size:10px;font-weight:700;padding:2px 10px;border-radius:8px;display:inline-block;margin-top:5px">${rl}</div>
+          ${m.note?`<div style="font-size:10px;color:var(--muted);margin-top:5px;line-height:1.3">${m.note}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
 // ============== RENDER MASTER ==============
 function renderMaster(){
   const d=MD;dch(['mc-g','mc-a','mc-p']);
@@ -480,6 +519,7 @@ function renderHarbor(){
       <div class="s-card"><div class="s-label">득실차</div><div class="s-val" style="color:var(--gold)">${tGF>=tGA?'+':''}${tGF-tGA}</div></div>
       <div class="s-card"><div class="s-label">승·무·패</div><div class="s-val" style="color:var(--teal);font-size:13px;margin-top:4px">${tW}·${tD}·${tL}</div></div>
     </div>
+    ${hbMatchSection(d)}
     <div class="panel mb16"><div class="panel-title"><span class="dot" style="background:var(--gold2)"></span>팀별 스탯</div>
       <div class="three-col" style="margin-bottom:0">${d.vs.map(r=>{
         const wP=r.games?(r.w/r.games*100).toFixed(0):0,dP=r.games?(r.d/r.games*100).toFixed(0):0,lP=r.games?(r.l/r.games*100).toFixed(0):0,wr=r.games?(r.w/r.games*100).toFixed(1):'0.0';
@@ -662,45 +702,118 @@ function renderRival(){
   const leading=gap>0?p2.name:gap<0?p1.name:'동점';
   const lc=gap>0?'#B71C1C':'#1565C0';
   const le=gap>0?'🦁':'🦅';
-  const fun=gap>25?['주건호 압도중 🔥','박성언 역전 가능?😅','밥값 걱정 ㅋㅋ']:gap>10?['접전이지만...','역전 노려야지']:gap===0?['완전 동점!🤯']:['박성언 리드!💪','주건호 위기😱'];
+  const fun=gap>25?'주건호 압도 중 🔥 박성언 역전 가능?':gap>10?'치열한 접전! 누가 웃을까?':gap===0?'완전 동점! 🤯 승부 예측 불가!':'박성언이 앞서고 있다! 주건호 위기? 😱';
   function cmpBar(v1,v2){const t=v1+v2||1;return`<div class="cmp-bar"><div class="cmp-p1" style="width:${(v1/t*100).toFixed(0)}%"></div><div class="cmp-p2" style="width:${(v2/t*100).toFixed(0)}%"></div></div>`;}
+
   document.getElementById('rival-content').innerHTML=`
-    <div class="rival-grid">
-      <div class="rival-player p1">
-        <div style="font-size:28px;margin-bottom:6px">🦅</div>
-        <div style="font-size:18px;font-weight:700;color:#1565C0">${p1.name}</div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:6px">공격형 미드필더</div>
-        <div style="font-size:34px;font-weight:700;color:#1565C0;margin:6px 0">${p1.pts}<span style="font-size:13px;font-weight:400"> pts</span></div>
-        <div style="font-size:11px;color:var(--muted)">${p1.games}경기 · ${p1.goals}골 · ${p1.assists}도움</div>
+
+    <!-- 대결 카드 — 세로 단독 카드 2개 -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+
+      <!-- 박성언 카드 -->
+      <div style="background:linear-gradient(135deg,#E3F2FD 0%,#fff 60%);border:2px solid #1565C0;border-radius:14px;padding:18px 20px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:#1565C0;border-radius:14px 0 0 14px"></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="font-size:44px;flex-shrink:0">🦅</div>
+          <div style="flex:1">
+            <div style="font-size:11px;color:#1565C0;font-weight:700;margin-bottom:2px">PLAYER 1</div>
+            <div style="font-size:22px;font-weight:700;color:#1565C0;margin-bottom:4px">${p1.name}</div>
+            <div style="font-size:11px;color:var(--muted)">공격형 미드필더</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:42px;font-weight:700;color:#1565C0;line-height:1">${p1.pts}</div>
+            <div style="font-size:12px;color:#1565C0;font-weight:600">pts</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#E3F2FD;border-radius:8px;overflow:hidden">
+          <div style="padding:8px;text-align:center;border-right:1px solid rgba(21,101,192,.15)">
+            <div style="font-size:10px;color:#1565C0;margin-bottom:2px">출전경기</div>
+            <div style="font-size:17px;font-weight:700;color:#1565C0">${p1.games}</div>
+          </div>
+          <div style="padding:8px;text-align:center;border-right:1px solid rgba(21,101,192,.15)">
+            <div style="font-size:10px;color:#1565C0;margin-bottom:2px">골</div>
+            <div style="font-size:17px;font-weight:700;color:#1565C0">${p1.goals}</div>
+          </div>
+          <div style="padding:8px;text-align:center;border-right:1px solid rgba(21,101,192,.15)">
+            <div style="font-size:10px;color:#1565C0;margin-bottom:2px">도움</div>
+            <div style="font-size:17px;font-weight:700;color:#1565C0">${p1.assists}</div>
+          </div>
+          <div style="padding:8px;text-align:center">
+            <div style="font-size:10px;color:#1565C0;margin-bottom:2px">경기당 pts</div>
+            <div style="font-size:17px;font-weight:700;color:#1565C0">${(p1.pts/p1.games).toFixed(2)}</div>
+          </div>
+        </div>
       </div>
-      <div class="rival-vs">VS</div>
-      <div class="rival-player p2">
-        <div style="font-size:28px;margin-bottom:6px">🦁</div>
-        <div style="font-size:18px;font-weight:700;color:#B71C1C">${p2.name}</div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:6px">스트라이커</div>
-        <div style="font-size:34px;font-weight:700;color:#B71C1C;margin:6px 0">${p2.pts}<span style="font-size:13px;font-weight:400"> pts</span></div>
-        <div style="font-size:11px;color:var(--muted)">${p2.games}경기 · ${p2.goals}골 · ${p2.assists}도움</div>
+
+      <!-- VS 배너 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:0 8px">
+        <div style="flex:1;height:2px;background:linear-gradient(90deg,#1565C0,transparent)"></div>
+        <div style="background:#2a1a0a;color:#ff9800;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;white-space:nowrap">🔥 VS 🔥</div>
+        <div style="flex:1;height:2px;background:linear-gradient(90deg,transparent,#B71C1C)"></div>
+      </div>
+
+      <!-- 주건호 카드 -->
+      <div style="background:linear-gradient(135deg,#FFEBEE 0%,#fff 60%);border:2px solid #B71C1C;border-radius:14px;padding:18px 20px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:#B71C1C;border-radius:14px 0 0 14px"></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="font-size:44px;flex-shrink:0">🦁</div>
+          <div style="flex:1">
+            <div style="font-size:11px;color:#B71C1C;font-weight:700;margin-bottom:2px">PLAYER 2</div>
+            <div style="font-size:22px;font-weight:700;color:#B71C1C;margin-bottom:4px">${p2.name}</div>
+            <div style="font-size:11px;color:var(--muted)">스트라이커</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:42px;font-weight:700;color:#B71C1C;line-height:1">${p2.pts}</div>
+            <div style="font-size:12px;color:#B71C1C;font-weight:600">pts</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#FFEBEE;border-radius:8px;overflow:hidden">
+          <div style="padding:8px;text-align:center;border-right:1px solid rgba(183,28,28,.15)">
+            <div style="font-size:10px;color:#B71C1C;margin-bottom:2px">출전경기</div>
+            <div style="font-size:17px;font-weight:700;color:#B71C1C">${p2.games}</div>
+          </div>
+          <div style="padding:8px;text-align:center;border-right:1px solid rgba(183,28,28,.15)">
+            <div style="font-size:10px;color:#B71C1C;margin-bottom:2px">골</div>
+            <div style="font-size:17px;font-weight:700;color:#B71C1C">${p2.goals}</div>
+          </div>
+          <div style="padding:8px;text-align:center;border-right:1px solid rgba(183,28,28,.15)">
+            <div style="font-size:10px;color:#B71C1C;margin-bottom:2px">도움</div>
+            <div style="font-size:17px;font-weight:700;color:#B71C1C">${p2.assists}</div>
+          </div>
+          <div style="padding:8px;text-align:center">
+            <div style="font-size:10px;color:#B71C1C;margin-bottom:2px">경기당 pts</div>
+            <div style="font-size:17px;font-weight:700;color:#B71C1C">${(p2.pts/p2.games).toFixed(2)}</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="meal-box">
+    <!-- 밥 내기 현황 -->
+    <div class="meal-box" style="margin-bottom:16px">
       <h3>🍽️ 2026 밥 내기 현황</h3>
-      <div style="display:flex;justify-content:center;gap:24px;margin-bottom:14px">
-        <div style="text-align:center"><div style="font-size:10px;color:#ffcc80">${p1.name}</div><div style="font-size:30px;font-weight:700;color:#64B5F6">${p1.pts}</div></div>
-        <div style="display:flex;align-items:center;font-size:20px">🆚</div>
-        <div style="text-align:center"><div style="font-size:10px;color:#ffcc80">${p2.name}</div><div style="font-size:30px;font-weight:700;color:#EF9A9A">${p2.pts}</div></div>
+      <div style="display:flex;justify-content:center;gap:24px;margin:12px 0">
+        <div style="text-align:center">
+          <div style="font-size:10px;color:#ffcc80;margin-bottom:4px">${p1.name}</div>
+          <div style="font-size:32px;font-weight:700;color:#64B5F6">${p1.pts}</div>
+        </div>
+        <div style="display:flex;align-items:center;color:#ff9800;font-size:22px">🆚</div>
+        <div style="text-align:center">
+          <div style="font-size:10px;color:#ffcc80;margin-bottom:4px">${p2.name}</div>
+          <div style="font-size:32px;font-weight:700;color:#EF9A9A">${p2.pts}</div>
+        </div>
       </div>
       ${cmpBar(p1.pts,p2.pts)}
-      <div style="margin-top:10px">
-        <span style="display:inline-block;padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;background:${lc};color:#fff">${leading} ${Math.abs(gap)}점 앞서는 중 ${le}</span>
+      <div style="margin-top:12px">
+        <span style="display:inline-block;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;background:${lc};color:#fff">${leading} ${Math.abs(gap)}점 앞서는 중 ${le}</span>
       </div>
-      <div style="margin-top:10px;font-size:13px;color:#ffcc80;font-style:italic">"${fun[0]}"</div>
-      <div style="margin-top:12px;font-size:10px;color:#ffcc80;opacity:.6">※ 2026년 12월 31일 기준 낮은 포인트 = 밥값</div>
+      <div style="margin-top:8px;font-size:12px;color:#ffcc80;font-style:italic">"${fun}"</div>
+      <div style="margin-top:10px;font-size:10px;color:#ffcc80;opacity:.6">※ 2026년 12월 31일 기준 낮은 포인트 = 밥값</div>
     </div>
 
+    <!-- 스탯 비교 -->
     <div class="panel mb16">
       <div class="panel-title" style="justify-content:space-between">
-        <div><span class="dot" style="background:#ff9800"></span>스탯 비교</div>
+        <div><span class="dot" style="background:#ff9800"></span>스탯 상세 비교</div>
         <button class="btn btn-sm" style="background:#2a1a0a;color:#ff9800;" onclick="openRivalInput()">✏️ 수정</button>
       </div>
       ${[{lbl:'⚽ 총 득점',v1:p1.goals,v2:p2.goals},{lbl:'🎯 총 도움',v1:p1.assists,v2:p2.assists},{lbl:'📊 총 포인트',v1:p1.pts,v2:p2.pts},{lbl:'🏃 출전 경기',v1:p1.games,v2:p2.games}].map(st=>{
@@ -708,49 +821,33 @@ function renderRival(){
         const wc=st.v1>st.v2?'#1565C0':st.v1<st.v2?'#B71C1C':'#888';
         return`<div style="margin-bottom:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <div style="font-size:12px;font-weight:700">${st.lbl}</div>
-            <div style="font-size:10px;color:${wc};font-weight:700">${w} 우위</div>
+            <span style="font-size:12px;font-weight:700">${st.lbl}</span>
+            <span style="font-size:10px;color:${wc};font-weight:700">${w} 우위</span>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:3px">
+          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:4px">
             <span style="color:#1565C0">${st.v1}</span><span style="color:#B71C1C">${st.v2}</span>
-          </div>${cmpBar(st.v1,st.v2)}</div>`;}).join('')}
+          </div>
+          ${cmpBar(st.v1,st.v2)}</div>`;}).join('')}
     </div>
 
-    <div class="two-col">
-      <div class="panel">
-        <div class="panel-title"><span class="dot" style="background:#1565C0"></span>🦅 ${p1.name} 경기당</div>
-        ${[['경기당 골',(p1.goals/p1.games).toFixed(2)],['경기당 도움',(p1.assists/p1.games).toFixed(2)],['경기당 포인트',(p1.pts/p1.games).toFixed(2)]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">${l}</span><span style="font-weight:700;color:#1565C0">${v}</span></div>`).join('')}
-        <div style="margin-top:12px;padding:10px;background:#E3F2FD;border-radius:8px;text-align:center">
-          <div style="font-size:10px;color:#1565C0;margin-bottom:2px">역전까지 필요한 포인트</div>
-          <div style="font-size:16px;font-weight:700;color:#1565C0">${Math.max(0,gap+1)}점</div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-title"><span class="dot" style="background:#B71C1C"></span>🦁 ${p2.name} 경기당</div>
-        ${[['경기당 골',(p2.goals/p2.games).toFixed(2)],['경기당 도움',(p2.assists/p2.games).toFixed(2)],['경기당 포인트',(p2.pts/p2.games).toFixed(2)]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">${l}</span><span style="font-weight:700;color:#B71C1C">${v}</span></div>`).join('')}
-        <div style="margin-top:12px;padding:10px;background:#FFEBEE;border-radius:8px;text-align:center">
-          <div style="font-size:10px;color:#B71C1C;margin-bottom:2px">현재 리드</div>
-          <div style="font-size:16px;font-weight:700;color:#B71C1C">${Math.abs(gap)}점</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-title"><span class="dot" style="background:#ff9800"></span>📈 연간 페이스 예측</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        ${[p1,p2].map((p,idx)=>{
-          const c=idx===0?'#1565C0':'#B71C1C',em=idx===0?'🦅':'🦁';
-          const mo=2.5;
-          return`<div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center">
-            <div style="font-size:13px;font-weight:700;color:${c};margin-bottom:8px">${em} ${p.name}</div>
-            <div style="font-size:11px;color:var(--muted)">현재: ${p.goals}골 ${p.assists}도움 = ${p.pts}pts</div>
-            <div style="border-top:1px solid var(--border);margin:8px 0;padding-top:8px">
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">연말 예상 (현 페이스 기준)</div>
-              <div style="font-size:20px;font-weight:700;color:${c}">${Math.round(p.pts/mo*12)}pts</div>
-              <div style="font-size:11px;color:var(--muted)">${Math.round(p.goals/mo*12)}골 ${Math.round(p.assists/mo*12)}도움</div>
-            </div>
-          </div>`;}).join('')}
-      </div>
+    <!-- 경기당 효율 + 페이스 예측 -->
+    <div class="panel mb16">
+      <div class="panel-title"><span class="dot" style="background:#ff9800"></span>경기당 효율 · 연말 페이스 예측</div>
+      ${[{p:p1,c:'#1565C0',em:'🦅'},{p:p2,c:'#B71C1C',em:'🦁'}].map(({p,c,em})=>{
+        const mo=2.5;
+        return`<div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:${c};margin-bottom:10px">${em} ${p.name}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;text-align:center">
+            <div><div style="font-size:9px;color:var(--muted)">경기당 골</div><div style="font-size:16px;font-weight:700;color:${c}">${(p.goals/p.games).toFixed(2)}</div></div>
+            <div><div style="font-size:9px;color:var(--muted)">경기당 도움</div><div style="font-size:16px;font-weight:700;color:${c}">${(p.assists/p.games).toFixed(2)}</div></div>
+            <div><div style="font-size:9px;color:var(--muted)">경기당 pts</div><div style="font-size:16px;font-weight:700;color:${c}">${(p.pts/p.games).toFixed(2)}</div></div>
+          </div>
+          <div style="background:${c}18;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:10px;color:${c};margin-bottom:2px">연말 예상 (현 페이스)</div>
+            <div style="font-size:18px;font-weight:700;color:${c}">${Math.round(p.pts/mo*12)}pts</div>
+            <div style="font-size:11px;color:var(--muted)">${Math.round(p.goals/mo*12)}골 ${Math.round(p.assists/mo*12)}도움 예상</div>
+          </div>
+        </div>`;}).join('')}
     </div>
   `;
 }
