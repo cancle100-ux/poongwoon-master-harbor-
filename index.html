@@ -3,495 +3,772 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>하버FC 대시보드</title>
+<title>스탯허브 — 마스터·하버·풍운FC</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
-:root {
-  --bg:#f4f3ef;--bg2:#fff;--border:#e4e2da;--text:#1a1a18;--muted:#888780;
-  --green:#3B6D11;--green2:#639922;--teal:#1D9E75;--gold:#BA7517;--gold2:#EF9F27;
-  --red:#D85A30;--red2:#A32D2D;--dark:#1a3a1a;--radius:12px;
-}
+:root{--bg:#f4f3ef;--bg2:#fff;--border:#e4e2da;--text:#1a1a18;--muted:#888780;--green:#3B6D11;--green2:#639922;--teal:#1D9E75;--gold:#BA7517;--gold2:#EF9F27;--red:#D85A30;--red2:#A32D2D;--blue:#185FA5;--blue2:#378ADD;--master:#1a2a4a;--harbor:#1a3a1a;--pungwoon:#3a1a2a;--radius:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);}
-.nav{background:var(--dark);padding:0 20px;display:flex;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.3);flex-wrap:wrap;}
-.nav-logo{color:var(--gold2);font-size:18px;font-weight:700;padding:14px 20px 14px 0;border-right:1px solid rgba(255,255,255,0.1);margin-right:8px;}
-.nav-tab{color:rgba(255,255,255,0.55);font-size:13px;font-weight:500;padding:14px 14px;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;}
-.nav-tab:hover{color:#fff;}
-.nav-tab.active{color:var(--gold2);border-bottom-color:var(--gold2);}
-.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
-.sync-btn{background:rgba(239,159,39,.15);border:1px solid rgba(239,159,39,.3);color:var(--gold2);font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .15s;}
-.sync-btn:hover{background:rgba(239,159,39,.25);}
-.sync-btn.loading{opacity:.6;pointer-events:none;}
-.last-updated{color:#9FE1CB;font-size:11px;white-space:nowrap;}
-.page{display:none;padding:24px 20px;max-width:1100px;margin:0 auto;}
+body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);min-height:100vh;}
+.nav{display:flex;align-items:center;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.25);flex-wrap:wrap;}
+.nav-logo{font-size:15px;font-weight:700;padding:13px 18px;white-space:nowrap;border-right:1px solid rgba(255,255,255,.15);}
+.nav-tab{font-size:12px;font-weight:600;padding:13px 14px;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;opacity:.6;}
+.nav-tab:hover{opacity:1;}
+.nav-tab.active{opacity:1;border-bottom-color:currentColor;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:16px;}
+.sync-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;}
+.sync-btn:hover{background:rgba(255,255,255,.2);}
+.last-upd{font-size:10px;opacity:.7;color:#fff;white-space:nowrap;}
+.nav.master{background:var(--master);}
+.nav.master .nav-logo,.nav.master .nav-tab{color:#90caf9;}
+.nav.harbor{background:var(--harbor);}
+.nav.harbor .nav-logo,.nav.harbor .nav-tab{color:#9FE1CB;}
+.nav.pungwoon{background:var(--pungwoon);}
+.nav.pungwoon .nav-logo,.nav.pungwoon .nav-tab{color:#f8bbd9;}
+.nav.rival{background:#2a1a0a;}
+.nav.rival .nav-logo,.nav.rival .nav-tab{color:#ffcc80;}
+.page{display:none;padding:20px 18px;max-width:1100px;margin:0 auto;}
 .page.active{display:block;}
-.loading-state{text-align:center;padding:80px 20px;color:var(--muted);}
-.spin{font-size:36px;display:inline-block;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.error-box{background:#FCEBEB;border:1px solid #f7c1c1;border-radius:var(--radius);padding:20px;color:var(--red2);text-align:center;margin:20px 0;}
-.stat-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;}
-.s-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;}
-.s-label{font-size:11px;color:var(--muted);margin-bottom:5px;}
-.s-val{font-size:22px;font-weight:700;}
+.stat-row{display:grid;gap:8px;margin-bottom:16px;}
+.s4{grid-template-columns:repeat(4,1fr);}
+.s5{grid-template-columns:repeat(5,1fr);}
+.s6{grid-template-columns:repeat(6,1fr);}
+.s-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;text-align:center;}
+.s-label{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.s-val{font-size:20px;font-weight:700;}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+.mb16{margin-bottom:16px;}
 .panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
-.panel-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;}
-.vs-team{margin-bottom:12px;}
-.vs-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;}
-.vs-head strong{color:var(--text);}
-.vs-bar{height:10px;border-radius:5px;overflow:hidden;display:flex;gap:1px;}
-.vw{background:var(--green2);}.vd{background:#888780;}.vl{background:var(--red);}
-.vs-sub{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;}
-.rank-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
-.rk-num{color:var(--muted);font-size:11px;min-width:16px;text-align:right;}
-.rk-name{font-weight:700;min-width:52px;}
+.panel-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:5px;}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+hr.div{border:none;border-top:1px solid var(--border);margin:12px 0;}
+.rank-row{display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:12px;}
+.rk-num{color:var(--muted);font-size:10px;min-width:14px;text-align:right;}
+.rk-name{font-weight:700;min-width:50px;}
+.rk-detail{font-size:10px;color:var(--muted);min-width:72px;}
 .rk-bar-wrap{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
 .rk-bar{height:100%;border-radius:4px;}
-.rk-val{min-width:28px;text-align:right;font-size:11px;font-weight:700;}
-.chem-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.rk-val{min-width:24px;text-align:right;font-size:11px;font-weight:700;}
+.chem-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px;}
 .chem-row:last-child{border-bottom:none;}
-.chem-s{font-weight:700;min-width:52px;}
+.chem-s{font-weight:700;min-width:48px;}
 .chem-a{color:var(--muted);}
 .chem-p{color:var(--gold);font-weight:700;}
-.top5-head{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg);padding:4px 8px;border-radius:6px;margin-bottom:4px;margin-top:8px;}
-.top5-row{display:flex;justify-content:space-between;padding:3px 6px;font-size:12px;}
-.half-row{margin-bottom:10px;}
-.half-bar-wrap{height:10px;background:#e4e2da;border-radius:5px;overflow:hidden;display:flex;}
-.half-first{background:#185FA5;}.half-second{background:#E24B4A;}
+.top5-head{font-size:10px;font-weight:700;color:var(--muted);background:var(--bg);padding:3px 7px;border-radius:5px;margin-bottom:3px;margin-top:7px;}
+.top5-row{display:flex;justify-content:space-between;padding:2px 5px;font-size:11px;}
+.stand-row{display:grid;grid-template-columns:24px 1fr 30px 30px 30px 30px 38px 38px;gap:4px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border);font-size:12px;}
+.stand-row:last-child{border-bottom:none;}
+.stand-row.hdr{font-size:10px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:6px;margin-bottom:4px;border:none;}
+.rb{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--bg);color:var(--muted);}
+.rb.g{background:#FFF8E1;color:#F57F17;}
+.rb.s{background:#F5F5F5;color:#616161;}
+.rb.b{background:#FBE9E7;color:#BF360C;}
+.match-cards{display:flex;gap:8px;flex-wrap:wrap;}
+.mc-sm{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 11px;text-align:center;min-width:74px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:3px;}
+.form-group label{font-size:10px;font-weight:700;color:var(--muted);}
+.form-group input,.form-group select{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg);outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--teal);background:#fff;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;}
+.btn:hover{opacity:.85;}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-danger{background:#FCEBEB;color:var(--red2);border:1px solid #f7c1c1;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:var(--radius);padding:22px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.modal-title{font-size:15px;font-weight:700;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+.loading-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.spin{font-size:32px;display:inline-block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.err-box{background:#FCEBEB;border:1px solid #f7c1c1;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--red2);}
+.rival-hdr{background:linear-gradient(135deg,#2a1a0a,#1a0a00);border-radius:var(--radius);padding:24px;margin-bottom:20px;text-align:center;}
+.rival-hdr h1{color:#ff9800;font-size:22px;font-weight:700;margin-bottom:4px;}
+.rival-hdr p{color:#ffcc80;font-size:13px;}
+.rival-grid{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;margin-bottom:20px;align-items:center;}
+.rival-player{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;}
+.rival-player.p1{border-color:#1565C0;background:linear-gradient(135deg,#E3F2FD,#fff);}
+.rival-player.p2{border-color:#B71C1C;background:linear-gradient(135deg,#FFEBEE,#fff);}
+.rival-vs{background:#2a1a0a;color:#ff9800;font-size:18px;font-weight:700;text-align:center;border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;margin:0 auto;}
+.cmp-bar{height:14px;background:var(--bg);border-radius:7px;overflow:hidden;display:flex;margin:4px 0;}
+.cmp-p1{background:#1565C0;}
+.cmp-p2{background:#B71C1C;}
+.meal-box{background:linear-gradient(135deg,#2a1a0a,#3a2a1a);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:20px;}
+.meal-box h3{color:#ff9800;font-size:16px;margin-bottom:8px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:20px;font-size:12px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);}
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-thead th{background:var(--bg);font-size:11px;font-weight:700;color:var(--muted);padding:8px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap;}
-thead th:first-child,thead th:nth-child(2){text-align:left;}
-tbody td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--border);}
+thead th{background:var(--bg);font-size:10px;font-weight:700;color:var(--muted);padding:7px 8px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);}
 tbody td:first-child{text-align:left;font-weight:700;}
-tbody td:nth-child(2){text-align:left;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover{background:var(--bg);}
-.num-pill{display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:11px;font-weight:700;color:var(--muted);}
-hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
-@media(max-width:600px){
-  .stat-row{grid-template-columns:repeat(3,1fr);}
-  .two-col{grid-template-columns:1fr;}
-}
+@media(max-width:600px){.stat-row.s4,.stat-row.s5,.stat-row.s6{grid-template-columns:repeat(3,1fr);}.two-col,.three-col{grid-template-columns:1fr;}.rival-grid{grid-template-columns:1fr 40px 1fr;}}
 </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="nav-logo">⚽ 하버FC</div>
-  <div class="nav-tab active" onclick="switchTab('dashboard',this)">📊 대시보드</div>
-  <div class="nav-tab" onclick="switchTab('players',this)">👤 선수 스탯</div>
-  <div class="nav-tab" onclick="switchTab('half',this)">⏱ 전후반</div>
+
+<nav class="nav master" id="main-nav">
+  <div class="nav-logo">🏆 스탯허브</div>
+  <div class="nav-tab active" onclick="showTeam('master',this)">🔵 마스터FC</div>
+  <div class="nav-tab" onclick="showTeam('harbor',this)">⚽ 하버FC</div>
+  <div class="nav-tab" onclick="showTeam('pungwoon',this)">🌟 풍운FC</div>
+  <div class="nav-tab" onclick="showTeam('rival',this)">🔥 라이벌</div>
   <div class="nav-right">
-    <span class="last-updated" id="last-updated">—</span>
-    <button class="sync-btn" id="sync-btn" onclick="loadData()">🔄 새로고침</button>
+    <span class="last-upd" id="last-upd">—</span>
+    <button class="sync-btn" id="sync-btn" onclick="refreshData()">🔄</button>
   </div>
 </nav>
-<div class="page active" id="page-dashboard"><div id="db-content"><div class="loading-state"><div class="spin">⚽</div><p style="margin-top:12px">구글 시트에서 실시간 데이터 불러오는 중...</p></div></div></div>
-<div class="page" id="page-players"><div id="pl-content"></div></div>
-<div class="page" id="page-half"><div id="hf-content"></div></div>
+
+<div class="page active" id="page-master">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div><div style="font-size:20px;font-weight:700">🔵 마스터FC 대시보드</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">목요일 정기전 · 팀전 내부리그 · 구글 시트 실시간</div></div>
+  </div>
+  <div id="master-content"><div class="loading-state"><div class="spin">⚽</div><p style="margin-top:10px">구글 시트 불러오는 중...</p></div></div>
+</div>
+
+<div class="page" id="page-harbor">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div><div style="font-size:20px;font-weight:700">⚽ 하버FC 대시보드</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">화요일 정기전 · 이벤트 매치 · 구글 시트 실시간</div></div>
+  </div>
+  <div id="harbor-content"><div class="loading-state"><div class="spin">⚽</div><p style="margin-top:10px">로딩 중...</p></div></div>
+</div>
+
+<div class="page" id="page-pungwoon">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div><div style="font-size:20px;font-weight:700">🌟 풍운FC 대시보드</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">일요일 정기전 · 이벤트 매치 · 로컬 저장</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" style="background:var(--pungwoon);color:#f8bbd9;" onclick="openModal('modal-pw-player')">+ 선수</button>
+      <button class="btn" style="background:var(--pungwoon);color:#f8bbd9;" onclick="openModal('modal-pw-match')">+ 경기</button>
+    </div>
+  </div>
+  <div id="pungwoon-content"></div>
+</div>
+
+<div class="page" id="page-rival">
+  <div class="rival-hdr">
+    <h1>🔥 2026 올해의 대결</h1>
+    <p>연말 결산 · 진 사람이 밥값 낸다 🍽️</p>
+  </div>
+  <div id="rival-content"></div>
+</div>
+
+<!-- 풍운 선수 모달 -->
+<div class="modal-overlay" id="modal-pw-player">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">풍운FC 선수 추가</div><button class="modal-close" onclick="closeModal('modal-pw-player')">✕</button></div>
+    <input type="hidden" id="pw-pid">
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:span 2"><label>이름 *</label><input id="pw-pname" type="text" placeholder="홍길동"></div>
+      <div class="form-group"><label>백넘버</label><input id="pw-pnum" type="number" placeholder="7"></div>
+      <div class="form-group"><label>포지션</label><select id="pw-ppos"><option>FW</option><option>MF</option><option>DF</option><option>GK</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-pw-player')">취소</button>
+      <button class="btn" style="background:var(--pungwoon);color:#f8bbd9;" onclick="savePwPlayer()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 풍운 경기 모달 -->
+<div class="modal-overlay" id="modal-pw-match">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">풍운FC 경기 기록</div><button class="modal-close" onclick="closeModal('modal-pw-match')">✕</button></div>
+    <input type="hidden" id="pw-mid">
+    <div class="form-grid">
+      <div class="form-group"><label>날짜</label><input id="pw-mdate" type="date"></div>
+      <div class="form-group"><label>유형</label><select id="pw-mtype"><option value="정기전">일요일 정기전</option><option value="이벤트">이벤트 매치</option></select></div>
+      <div class="form-group"><label>상대팀</label><input id="pw-mopp" type="text" placeholder="상대팀명"></div>
+      <div class="form-group"><label>득점</label><input id="pw-mgf" type="number" value="0" min="0"></div>
+      <div class="form-group"><label>실점</label><input id="pw-mga" type="number" value="0" min="0"></div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:14px 0;padding-top:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">득점 기록 (선택)</div>
+      <div id="pw-glist"></div>
+      <button class="btn btn-outline btn-sm" onclick="addGoalRow()" style="margin-top:8px">+ 득점 추가</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-pw-match')">취소</button>
+      <button class="btn" style="background:var(--pungwoon);color:#f8bbd9;" onclick="savePwMatch()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 라이벌 수정 모달 -->
+<div class="modal-overlay" id="modal-rival">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🔥 스탯 업데이트</div><button class="modal-close" onclick="closeModal('modal-rival')">✕</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:10px">🦅 박성언</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="form-group"><label>경기수</label><input id="ri-p1g" type="number" min="0"></div>
+          <div class="form-group"><label>골</label><input id="ri-p1go" type="number" min="0"></div>
+          <div class="form-group"><label>도움</label><input id="ri-p1a" type="number" min="0"></div>
+          <div class="form-group"><label>포인트</label><input id="ri-p1p" type="number" min="0"></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#B71C1C;margin-bottom:10px">🦁 주건호</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="form-group"><label>경기수</label><input id="ri-p2g" type="number" min="0"></div>
+          <div class="form-group"><label>골</label><input id="ri-p2go" type="number" min="0"></div>
+          <div class="form-group"><label>도움</label><input id="ri-p2a" type="number" min="0"></div>
+          <div class="form-group"><label>포인트</label><input id="ri-p2p" type="number" min="0"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-rival')">취소</button>
+      <button class="btn" style="background:#2a1a0a;color:#ff9800;" onclick="saveRival()">저장</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SHEET_ID='1cM4UhB-nL6smf4OIn_lqQ0on1AtYG2ff_haIXBvXnK0';
-const GID='1445436566';
-let charts={}, D=null, timer=null;
+const GID_MLOG='258427967';
+const GID_HDASH='1445436566';
+let CH={},MD=null,HD=null,RT=null;
 
-// ===== 구글 시트에서 직접 읽어온 내장 데이터 (로컬 오프라인용) =====
-const EMBEDDED = {
-  date:'2026-03-17', round:'9라운드',
-  players:[
-    {year:'92',num:'9',name:'주건호',games:32,field:32,keeper:0,goals:17,assists:11,clean:1,points:29,conceded:0,concede_rate:'0.00',og:0},
-    {year:'89',num:'8',name:'박동휘',games:22,field:21,keeper:1,goals:14,assists:7,clean:1,points:22,conceded:2,concede_rate:'2.00',og:0},
-    {year:'85',num:'71',name:'김준식',games:22,field:22,keeper:0,goals:9,assists:4,clean:0,points:13,conceded:0,concede_rate:'0.00',og:0},
-    {year:'89',num:'18',name:'김형욱',games:33,field:33,keeper:0,goals:7,assists:8,clean:5,points:20,conceded:0,concede_rate:'0.00',og:0},
-    {year:'90',num:'66',name:'강지선',games:33,field:33,keeper:0,goals:5,assists:10,clean:6,points:21,conceded:0,concede_rate:'0.00',og:0},
-    {year:'91빠',num:'20',name:'이기세',games:25,field:25,keeper:0,goals:5,assists:2,clean:0,points:7,conceded:0,concede_rate:'0.00',og:0},
-    {year:'80빠',num:'98',name:'조재상',games:21,field:19,keeper:2,goals:5,assists:2,clean:0,points:7,conceded:4,concede_rate:'2.00',og:0},
-    {year:'92',num:'17',name:'장치광',games:23,field:23,keeper:0,goals:4,assists:1,clean:2,points:7,conceded:0,concede_rate:'0.00',og:0},
-    {year:'01',num:'',name:'최진서',games:14,field:14,keeper:0,goals:3,assists:4,clean:2,points:9,conceded:0,concede_rate:'0.00',og:0},
-    {year:'98',num:'72',name:'김남준',games:19,field:19,keeper:0,goals:3,assists:1,clean:3,points:7,conceded:0,concede_rate:'0.00',og:0},
-    {year:'92',num:'1',name:'선효림',games:22,field:17,keeper:5,goals:3,assists:1,clean:2,points:6,conceded:7,concede_rate:'1.40',og:0},
-    {year:'',num:'',name:'정경훈',games:3,field:3,keeper:0,goals:3,assists:0,clean:0,points:3,conceded:0,concede_rate:'0.00',og:0},
-    {year:'90',num:'12',name:'장주성',games:34,field:34,keeper:0,goals:2,assists:1,clean:11,points:14,conceded:0,concede_rate:'0.00',og:0},
-    {year:'83',num:'55',name:'김의선',games:20,field:20,keeper:0,goals:2,assists:0,clean:7,points:9,conceded:0,concede_rate:'0.00',og:0},
-    {year:'89',num:'19',name:'김래상',games:10,field:10,keeper:0,goals:2,assists:0,clean:2,points:4,conceded:0,concede_rate:'0.00',og:0},
-    {year:'86',num:'21',name:'박성언',games:6,field:6,keeper:0,goals:1,assists:4,clean:0,points:5,conceded:0,concede_rate:'0.00',og:0},
-    {year:'79',num:'11',name:'양병선',games:9,field:9,keeper:0,goals:1,assists:4,clean:0,points:5,conceded:0,concede_rate:'0.00',og:0},
-    {year:'',num:'',name:'장지온',games:3,field:3,keeper:0,goals:1,assists:3,clean:0,points:4,conceded:0,concede_rate:'0.00',og:0},
-    {year:'88',num:'20',name:'양순원',games:12,field:12,keeper:0,goals:1,assists:2,clean:6,points:9,conceded:0,concede_rate:'0.00',og:0},
-    {year:'04',num:'',name:'김강현',games:10,field:1,keeper:9,goals:1,assists:0,clean:7,points:8,conceded:2,concede_rate:'0.22',og:0},
-    {year:'96',num:'99',name:'조민세',games:3,field:3,keeper:0,goals:1,assists:0,clean:0,points:1,conceded:0,concede_rate:'0.00',og:0},
-    {year:'81',num:'3',name:'신관수',games:27,field:26,keeper:1,goals:0,assists:3,clean:13,points:16,conceded:2,concede_rate:'2.00',og:0},
-    {year:'92',num:'10',name:'박수범',games:14,field:14,keeper:0,goals:0,assists:3,clean:2,points:5,conceded:0,concede_rate:'0.00',og:0},
-    {year:'92',num:'7',name:'유재영',games:3,field:3,keeper:0,goals:0,assists:3,clean:0,points:3,conceded:0,concede_rate:'0.00',og:0},
-    {year:'',num:'',name:'정동근',games:3,field:3,keeper:0,goals:0,assists:3,clean:0,points:3,conceded:0,concede_rate:'0.00',og:0},
-    {year:'05',num:'31',name:'임기민',games:32,field:2,keeper:30,goals:0,assists:1,clean:14,points:15,conceded:21,concede_rate:'0.70',og:0},
-    {year:'79',num:'4',name:'김성환',games:24,field:24,keeper:0,goals:0,assists:0,clean:11,points:11,conceded:0,concede_rate:'0.00',og:0},
-    {year:'93',num:'19',name:'황세원',games:20,field:20,keeper:0,goals:0,assists:0,clean:10,points:10,conceded:0,concede_rate:'0.00',og:0},
-    {year:'79',num:'88',name:'김장수',games:10,field:10,keeper:0,goals:0,assists:0,clean:7,points:7,conceded:0,concede_rate:'0.00',og:0},
-    {year:'83',num:'83',name:'차진옥',games:16,field:16,keeper:0,goals:0,assists:0,clean:5,points:5,conceded:0,concede_rate:'0.00',og:0},
-    {year:'97',num:'33',name:'김진수',games:13,field:12,keeper:1,goals:0,assists:0,clean:5,points:5,conceded:2,concede_rate:'2.00',og:0},
-    {year:'88',num:'5',name:'이무영',games:11,field:11,keeper:0,goals:0,assists:0,clean:4,points:4,conceded:0,concede_rate:'0.00',og:0},
-    {year:'99',num:'50',name:'원종민',games:11,field:11,keeper:0,goals:0,assists:0,clean:3,points:3,conceded:0,concede_rate:'0.00',og:0},
-  ],
-  vsRecord:[
-    {opp:'아이콘',games:18,w:3,d:9,l:6,gf:16,ga:20},
-    {opp:'터틀파크',games:18,w:13,d:3,l:2,gf:35,ga:11},
-    {opp:'한울',games:17,w:12,d:4,l:1,gf:37,ga:9},
-  ],
-  topScorers:{
-    '한울':[{name:'주건호',goals:8},{name:'강지선',goals:3},{name:'김준식',goals:3},{name:'김형욱',goals:3},{name:'박동휘',goals:3}],
-    '터틀파크':[{name:'박동휘',goals:8},{name:'주건호',goals:5},{name:'이기세',goals:3},{name:'정경훈',goals:3},{name:'강지선',goals:2}],
-    '아이콘':[{name:'김준식',goals:4},{name:'주건호',goals:3},{name:'김형욱',goals:2},{name:'박동휘',goals:2},{name:'조재상',goals:2}],
-  },
-  chem:[
-    {scorer:'주건호',assist:'유재영',pct:'11.8%'},
-    {scorer:'주건호',assist:'신관수',pct:'11.8%'},
-    {scorer:'주건호',assist:'김형욱',pct:'11.8%'},
-    {scorer:'박동휘',assist:'(단독)',pct:'28.6%'},
-    {scorer:'박동휘',assist:'주건호',pct:'21.4%'},
-    {scorer:'박동휘',assist:'강지선',pct:'14.3%'},
-    {scorer:'김준식',assist:'박성언',pct:'33.3%'},
-    {scorer:'김준식',assist:'강지선',pct:'22.2%'},
-    {scorer:'김형욱',assist:'주건호',pct:'57.1%'},
-    {scorer:'강지선',assist:'조재상',pct:'20.0%'},
-    {scorer:'강지선',assist:'장지온',pct:'20.0%'},
-    {scorer:'강지선',assist:'박수범',pct:'20.0%'},
-  ],
-  halfStats:[
-    {name:'주건호',first:13,second:14,total:27,firstPct:48.1,secondPct:51.9},
-    {name:'박동휘',first:11,second:9,total:20,firstPct:55.0,secondPct:45.0},
-    {name:'김형욱',first:7,second:8,total:15,firstPct:46.7,secondPct:53.3},
-    {name:'강지선',first:5,second:10,total:15,firstPct:33.3,secondPct:66.7},
-    {name:'김준식',first:0,second:13,total:13,firstPct:0,secondPct:100},
-    {name:'조재상',first:6,second:1,total:7,firstPct:85.7,secondPct:14.3},
-    {name:'최진서',first:2,second:5,total:7,firstPct:28.6,secondPct:71.4},
-    {name:'이기세',first:2,second:4,total:6,firstPct:33.3,secondPct:66.7},
-    {name:'장치광',first:2,second:2,total:4,firstPct:50.0,secondPct:50.0},
-    {name:'선효림',first:1,second:3,total:4,firstPct:25.0,secondPct:75.0},
-    {name:'장지온',first:4,second:0,total:4,firstPct:100,secondPct:0},
-    {name:'박성언',first:0,second:5,total:5,firstPct:0,secondPct:100},
-    {name:'양병선',first:2,second:3,total:5,firstPct:40.0,secondPct:60.0},
-    {name:'박수범',first:2,second:1,total:3,firstPct:66.7,secondPct:33.3},
-    {name:'유재영',first:2,second:1,total:3,firstPct:66.7,secondPct:33.3},
-    {name:'정동근',first:0,second:3,total:3,firstPct:0,secondPct:100},
-    {name:'정경훈',first:2,second:1,total:3,firstPct:66.7,secondPct:33.3},
-    {name:'양순원',first:1,second:2,total:3,firstPct:33.3,secondPct:66.7},
-    {name:'김남준',first:3,second:1,total:4,firstPct:75.0,secondPct:25.0},
-    {name:'신관수',first:0,second:2,total:2,firstPct:0,secondPct:100},
-    {name:'김의선',first:0,second:2,total:2,firstPct:0,secondPct:100},
-    {name:'김래상',first:1,second:1,total:2,firstPct:50.0,secondPct:50.0},
-  ]
-};
-
-function switchTab(name,el){
+// ============== NAV ==============
+function showTeam(t,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
   el.classList.add('active');
-  if(D) renderAll();
+  document.getElementById('main-nav').className='nav '+t;
+  if(t==='master'&&!MD)refreshData();
+  if(t==='harbor'&&!HD)refreshData();
+  if(t==='pungwoon')renderPW();
+  if(t==='rival')renderRival();
 }
 
-async function loadData(){
-  const btn=document.getElementById('sync-btn');
-  btn.classList.add('loading'); btn.textContent='⏳ 로딩 중...';
-  if(timer) clearInterval(timer);
-  try{
-    const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(), 8000);
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&t=${Date.now()}`;
-    const res=await fetch(url, {signal:controller.signal, mode:'cors'});
-    clearTimeout(timeout);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    if(!text||text.trim().length<10) throw new Error('빈 데이터');
-    D=parseSheetData(parseCSV(text));
-    const n=new Date();
-    document.getElementById('last-updated').textContent=`실시간 ${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} ✅ (5분 자동갱신)`;
-    // 에러 박스 있으면 제거
-    document.querySelectorAll('.fetch-error').forEach(el=>el.remove());
-    renderAll();
-    timer=setInterval(loadData,5*60*1000);
-  }catch(e){
-    if(!D){ D=EMBEDDED; renderAll(); }
-    const msg=e.name==='AbortError'?'요청 시간 초과 (8초)':e.message;
-    document.getElementById('last-updated').textContent=`⚠️ 연결 실패: ${msg}`;
-    document.querySelectorAll('.fetch-error').forEach(el=>el.remove());
-    document.getElementById('db-content').insertAdjacentHTML('afterbegin',
-      `<div class="fetch-error" style="background:#FCEBEB;border:1px solid #f7c1c1;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#A32D2D">
-        ⚠️ 실시간 연결 실패: ${msg}<br><small>내장 데이터(9라운드)로 표시 중</small>
-      </div>`);
-    console.warn(e);
-  }finally{
-    btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
-  }
+// ============== FETCH ==============
+async function fetchTab(gid){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),10000);
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&t=${Date.now()}`;
+  const res=await fetch(url,{signal:ctrl.signal,mode:'cors'});
+  clearTimeout(t);
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const txt=await res.text();
+  if(!txt||txt.trim().length<10)throw new Error('빈데이터');
+  return parseCSV(txt);
 }
 
-function showError(msg){ console.warn(msg); }
-
-function parseCSV(text){
-  const rows=[];
-  let cur='',inQ=false,row=[];
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
+function parseCSV(txt){
+  const rows=[];let cur='',inQ=false,row=[];
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
     if(c==='"'){inQ=!inQ;}
     else if(c===','&&!inQ){row.push(cur.trim());cur='';}
     else if((c==='\n'||c==='\r')&&!inQ){
       if(cur!==''||row.length){row.push(cur.trim());rows.push(row);}
       cur='';row=[];
-      if(c==='\r'&&text[i+1]==='\n')i++;
-    }else{cur+=c;}
+      if(c==='\r'&&txt[i+1]==='\n')i++;
+    }else cur+=c;
   }
   if(cur!==''||row.length){row.push(cur.trim());rows.push(row);}
   return rows;
 }
 
-function parseSheetData(rows){
-  const d={date:'',round:'',players:[],vsRecord:[],topScorers:{},chem:[],halfStats:[]};
-  // Row 0: date col9, round col11
+async function refreshData(){
+  const btn=document.getElementById('sync-btn');
+  btn.textContent='⏳';btn.disabled=true;
+  try{
+    const [mRows,hRows]=await Promise.all([fetchTab(GID_MLOG),fetchTab(GID_HDASH)]);
+    MD=parseMaster(mRows);
+    HD=parseHarbor(hRows);
+    const n=new Date();
+    document.getElementById('last-upd').textContent=`${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} ✅`;
+    renderMaster();renderHarbor();
+    if(RT)clearInterval(RT);
+    RT=setInterval(refreshData,5*60*1000);
+  }catch(e){
+    document.getElementById('last-upd').textContent='⚠️ 실패';
+    if(!MD){MD={teams:{},players:{},matches:[],recent:[]};renderMaster();}
+    if(!HD){HD=hbFallback();renderHarbor();}
+    console.warn(e);
+  }finally{btn.textContent='🔄';btn.disabled=false;}
+}
+
+// ============== MASTER PARSE ==============
+function parseMaster(rows){
+  const d={teams:{},players:{},matches:[],recent:[]};
+  const mr=rows.filter(r=>r[9]==='마스터FC'&&r[0]&&r[1]);
+  const gmap={};
+  for(const r of mr){
+    const date=r[0],gid=r[1],myT=r[2],oppT=r[3],scorer=r[4],assist=r[5],og=r[6];
+    if(!myT||!oppT)continue;
+    const key=`${date}__${gid}__${[myT,oppT].sort().join('__')}`;
+    if(!gmap[key])gmap[key]={date,gid,teams:[myT,oppT].sort(),goals:{[myT]:0,[oppT]:0}};
+    if(scorer&&!og)gmap[key].goals[myT]=(gmap[key].goals[myT]||0)+1;
+    if(og)gmap[key].goals[oppT]=(gmap[key].goals[oppT]||0)+1;
+  }
+  for(const g of Object.values(gmap)){
+    const[t1,t2]=g.teams;const g1=g.goals[t1]||0,g2=g.goals[t2]||0;
+    for(const team of[t1,t2]){
+      if(!d.teams[team])d.teams[team]={name:team,g:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
+      const myG=(team===t1)?g1:g2,oppG=(team===t1)?g2:g1;
+      d.teams[team].g++;d.teams[team].gf+=myG;d.teams[team].ga+=oppG;
+      if(myG>oppG){d.teams[team].w++;d.teams[team].pts+=3;}
+      else if(myG===oppG){d.teams[team].d++;d.teams[team].pts++;}
+      else d.teams[team].l++;
+    }
+    d.matches.push({...g,score:{[t1]:g1,[t2]:g2}});
+  }
+  for(const r of mr){
+    const sc=r[4],as=r[5],og=r[6];
+    if(sc&&!og){if(!d.players[sc])d.players[sc]={name:sc,g:0,a:0,og:0,pts:0};d.players[sc].g++;d.players[sc].pts++;}
+    if(as){if(!d.players[as])d.players[as]={name:as,g:0,a:0,og:0,pts:0};d.players[as].a++;d.players[as].pts++;}
+    if(og){if(!d.players[og])d.players[og]={name:og,g:0,a:0,og:0,pts:0};d.players[og].og++;}
+  }
+  d.recent=d.matches.sort((a,b)=>b.date.localeCompare(a.date)||b.gid.localeCompare(a.gid)).slice(0,10);
+  return d;
+}
+
+// ============== HARBOR PARSE ==============
+function parseHarbor(rows){
+  const d={date:'',round:'',players:[],vs:[],topScorers:{},chem:[],half:[]};
   if(rows[0]){
     for(let c=8;c<14;c++){if(rows[0][c]&&rows[0][c].match(/\d{4}-\d{2}-\d{2}/)){d.date=rows[0][c];break;}}
     for(let c=10;c<16;c++){if(rows[0][c]&&rows[0][c].includes('라운드')){d.round=rows[0][c];break;}}
   }
-  // Players: find header row with '이름'
   let hRow=-1;
   for(let i=0;i<rows.length;i++){if(rows[i][2]==='이름'){hRow=i;break;}}
-  if(hRow>=0){
-    for(let i=hRow+1;i<rows.length;i++){
-      const r=rows[i], name=r[2];
-      if(!name)break;
-      d.players.push({
-        year:r[0]||'',num:r[1]||'',name,
-        games:+r[3]||0,field:+r[4]||0,keeper:+r[5]||0,
-        goals:+r[6]||0,assists:+r[7]||0,clean:+r[8]||0,
-        points:+r[9]||0,conceded:+r[10]||0,
-        concede_rate:r[11]||'0.00',og:+r[12]||0
-      });
-    }
+  if(hRow>=0)for(let i=hRow+1;i<rows.length;i++){
+    const r=rows[i],name=r[2];if(!name)break;
+    d.players.push({num:r[1]||'',name,games:+r[3]||0,field:+r[4]||0,keeper:+r[5]||0,goals:+r[6]||0,assists:+r[7]||0,clean:+r[8]||0,points:+r[9]||0,conceded:+r[10]||0,cr:r[11]||'0.00'});
   }
-  // vs record: col15=opponent name, col16=games(number)
   const OPPS=new Set(['아이콘','터틀파크','한울']);
+  for(let i=0;i<rows.length;i++){const r=rows[i];if(r[15]&&OPPS.has(r[15])&&r[16]&&!isNaN(+r[16])&&+r[16]>0)d.vs.push({opp:r[15],games:+r[16],w:+r[17]||0,d:+r[18]||0,l:+r[19]||0,gf:+r[20]||0,ga:+r[21]||0});}
+  let ts=false,co=null;
   for(let i=0;i<rows.length;i++){
     const r=rows[i];
-    if(r[15]&&OPPS.has(r[15])&&r[16]&&!isNaN(+r[16])&&+r[16]>0){
-      d.vsRecord.push({opp:r[15],games:+r[16],w:+r[17]||0,d:+r[18]||0,l:+r[19]||0,gf:+r[20]||0,ga:+r[21]||0});
-    }
+    if(r[15]&&r[15].includes('다득점')){ts=true;continue;}if(!ts)continue;
+    if(r[15]&&OPPS.has(r[15])){co=r[15];if(!d.topScorers[co])d.topScorers[co]=[];if(r[16]&&r[17]&&!isNaN(+r[17]))d.topScorers[co].push({name:r[16],goals:+r[17]});}
+    else if(co&&!r[15]&&r[16]&&r[17]&&!isNaN(+r[17]))d.topScorers[co].push({name:r[16],goals:+r[17]});
+    else if(r[15]&&!OPPS.has(r[15])&&r[15]!=='상대팀'&&(r[15].includes('케미')||r[15].includes('포인트')||r[15].includes('전반')))break;
   }
-  // Top scorers by opp: col15=opp, col16=player(text), col17=goals
-  // detect "상대팀별 다득점" section
-  let topSection=false, curOpp=null;
-  for(let i=0;i<rows.length;i++){
-    const r=rows[i];
-    if(r[15]&&r[15].includes('다득점')){topSection=true;continue;}
-    if(!topSection)continue;
-    if(r[15]&&OPPS.has(r[15])){
-      curOpp=r[15];
-      if(!d.topScorers[curOpp])d.topScorers[curOpp]=[];
-      if(r[16]&&r[17]&&!isNaN(+r[17]))d.topScorers[curOpp].push({name:r[16],goals:+r[17]});
-    }else if(curOpp&&!r[15]&&r[16]&&r[17]&&!isNaN(+r[17])){
-      d.topScorers[curOpp].push({name:r[16],goals:+r[17]});
-    }else if(r[15]&&!OPPS.has(r[15])&&r[15]!=='상대팀'){
-      if(r[15].includes('케미')||r[15].includes('포인트')||r[15].includes('전반'))break;
-    }
-  }
-  // Chemistry: col19=scorer, col20=assist, col22=pct%
-  for(let i=0;i<rows.length;i++){
-    const r=rows[i];
-    if(r[19]&&r[22]&&r[22].includes('%')&&r[19]!=='득점자'){
-      d.chem.push({scorer:r[19],assist:r[20]||'단독',pct:r[22]});
-    }
-  }
-  // Half stats: find '선수명' header in col15
-  let halfH=false;
-  for(let i=0;i<rows.length;i++){
-    const r=rows[i];
-    if(r[15]==='선수명'&&r[16]==='전반'){halfH=true;continue;}
-    if(halfH&&r[15]&&r[15]!==''&&r[19]&&r[19].includes('%')){
-      d.halfStats.push({name:r[15],first:+r[16]||0,second:+r[17]||0,total:+r[18]||0,firstPct:parseFloat(r[19])||0,secondPct:parseFloat(r[20])||0});
-    }
-  }
+  for(let i=0;i<rows.length;i++){const r=rows[i];if(r[19]&&r[22]&&r[22].includes('%')&&r[19]!=='득점자')d.chem.push({s:r[19],a:r[20]||'단독',p:r[22]});}
+  let hh=false;
+  for(let i=0;i<rows.length;i++){const r=rows[i];if(r[15]==='선수명'&&r[16]==='전반'){hh=true;continue;}if(hh&&r[15]&&r[19]&&r[19].includes('%'))d.half.push({name:r[15],f:+r[16]||0,s:+r[17]||0,t:+r[18]||0,fp:parseFloat(r[19])||0,sp:parseFloat(r[20])||0});}
   return d;
 }
 
-function renderAll(){
-  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});
-  charts={};
-  renderDashboard();
-  renderPlayers();
-  renderHalf();
-}
+function hbFallback(){return{date:'2026-03-17',round:'9라운드',players:[
+  {num:'9',name:'주건호',games:32,field:32,keeper:0,goals:17,assists:11,clean:1,points:29,conceded:0,cr:'0.00'},
+  {num:'8',name:'박동휘',games:22,field:21,keeper:1,goals:14,assists:7,clean:1,points:22,conceded:2,cr:'2.00'},
+  {num:'71',name:'김준식',games:22,field:22,keeper:0,goals:9,assists:4,clean:0,points:13,conceded:0,cr:'0.00'},
+  {num:'18',name:'김형욱',games:33,field:33,keeper:0,goals:7,assists:8,clean:5,points:20,conceded:0,cr:'0.00'},
+  {num:'66',name:'강지선',games:33,field:33,keeper:0,goals:5,assists:10,clean:6,points:21,conceded:0,cr:'0.00'},
+  {num:'3',name:'신관수',games:27,field:26,keeper:1,goals:0,assists:3,clean:13,points:16,conceded:2,cr:'2.00'},
+  {num:'31',name:'임기민',games:32,field:2,keeper:30,goals:0,assists:1,clean:14,points:15,conceded:21,cr:'0.70'},
+],vs:[{opp:'아이콘',games:18,w:3,d:9,l:6,gf:16,ga:20},{opp:'터틀파크',games:18,w:13,d:3,l:2,gf:35,ga:11},{opp:'한울',games:17,w:12,d:4,l:1,gf:37,ga:9}],
+topScorers:{'한울':[{name:'주건호',goals:8},{name:'강지선',goals:3}],'터틀파크':[{name:'박동휘',goals:8},{name:'주건호',goals:5}],'아이콘':[{name:'김준식',goals:4},{name:'주건호',goals:3}]},
+chem:[{s:'주건호',a:'↔ 김형욱',p:'11.8%'},{s:'박동휘',a:'↔ 주건호',p:'21.4%'},{s:'김형욱',a:'↔ 주건호',p:'57.1%'}],half:[]};}
 
-function barList(data,color){
-  if(!data.length)return '';
-  const max=Math.max(...data.map(d=>d.val),1);
-  return data.map((d,i)=>`<div class="rank-row">
-    <span class="rk-num">${i+1}</span>
-    <span class="rk-name">${d.name}</span>
-    <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(d.val/max*100)}%;background:${color}"></div></div>
-    <span class="rk-val" style="color:${color}">${d.val}</span>
-  </div>`).join('');
-}
-
-function renderDashboard(){
-  const d=D; if(!d||!d.players.length)return;
-  const totalW=d.vsRecord.reduce((s,v)=>s+v.w,0);
-  const totalDr=d.vsRecord.reduce((s,v)=>s+v.d,0);
-  const totalL=d.vsRecord.reduce((s,v)=>s+v.l,0);
-  const totalGF=d.vsRecord.reduce((s,v)=>s+v.gf,0);
-  const totalGA=d.vsRecord.reduce((s,v)=>s+v.ga,0);
-  const totalG=d.vsRecord.reduce((s,v)=>s+v.games,0);
-  const totalClean=d.players.reduce((s,p)=>s+p.clean,0);
-  const gSort=[...d.players].sort((a,b)=>b.goals-a.goals).filter(p=>p.goals>0).slice(0,8);
-  const aSort=[...d.players].sort((a,b)=>b.assists-a.assists).filter(p=>p.assists>0).slice(0,8);
-  const pSort=[...d.players].sort((a,b)=>b.points-a.points).filter(p=>p.points>0).slice(0,6);
-  const cSort=[...d.players].sort((a,b)=>b.clean-a.clean).filter(p=>p.clean>0).slice(0,7);
-  const eSort=[...d.players].filter(p=>p.games>=5).map(p=>({...p,eff:(p.goals+p.assists)/p.games})).sort((a,b)=>b.eff-a.eff).slice(0,8);
-  const EC=['#BA7517','#EF9F27','#FAC775','#e8c870','#d4b45a','#c0a045','#ac8c30','#988020'];
-
-  document.getElementById('db-content').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-      <div><div style="font-size:20px;font-weight:700">⚽ 하버FC 대시보드</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:2px">화요일 친선전 · ${d.round} · ${d.date}</div></div>
+// ============== RENDER MASTER ==============
+function renderMaster(){
+  const d=MD;dch(['mc-g','mc-a','mc-p']);
+  if(!d){document.getElementById('master-content').innerHTML='<div class="loading-state"><div class="spin">⚽</div></div>';return;}
+  const teams=Object.values(d.teams).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga));
+  const players=Object.values(d.players);
+  const gSort=players.filter(p=>p.g>0).sort((a,b)=>b.g-a.g).slice(0,10);
+  const aSort=players.filter(p=>p.a>0).sort((a,b)=>b.a-a.a).slice(0,8);
+  const pSort=players.filter(p=>p.pts>0).sort((a,b)=>b.pts-a.pts).slice(0,8);
+  const tGoals=players.reduce((s,p)=>s+p.g,0);
+  const rb=(i)=>{if(i===0)return'<span class="rb g">1</span>';if(i===1)return'<span class="rb s">2</span>';if(i===2)return'<span class="rb b">3</span>';return`<span class="rb">${i+1}</span>`;};
+  document.getElementById('master-content').innerHTML=`
+    ${d.matches.length===0?`<div class="err-box">⚠️ 마스터FC 데이터 없음 — 구글 시트에 데이터가 입력되면 자동으로 표시됩니다</div>`:''}
+    <div class="stat-row s4">
+      <div class="s-card"><div class="s-label">총 경기</div><div class="s-val">${d.matches.length}</div></div>
+      <div class="s-card"><div class="s-label">총 득점</div><div class="s-val" style="color:var(--green)">${tGoals}</div></div>
+      <div class="s-card"><div class="s-label">등록 선수</div><div class="s-val" style="color:var(--blue)">${players.length}명</div></div>
+      <div class="s-card"><div class="s-label">참여 팀</div><div class="s-val" style="color:var(--gold)">${teams.length}팀</div></div>
     </div>
-    <div class="stat-row">
-      <div class="s-card"><div class="s-label">총 경기</div><div class="s-val">${totalG||'—'}</div></div>
-      <div class="s-card"><div class="s-label">총 득점</div><div class="s-val" style="color:var(--green)">${totalGF||'—'}</div></div>
-      <div class="s-card"><div class="s-label">클린시트</div><div class="s-val" style="color:var(--teal)">${totalClean}</div></div>
-      <div class="s-card"><div class="s-label">총 실점</div><div class="s-val" style="color:var(--red)">${totalGA||'—'}</div></div>
-      <div class="s-card"><div class="s-label">득실차</div><div class="s-val" style="color:var(--gold)">${totalGF&&totalGA?(totalGF>=totalGA?'+':'')+(totalGF-totalGA):'—'}</div></div>
-      <div class="s-card"><div class="s-label">승·무·패</div><div class="s-val" style="color:var(--teal);font-size:15px;margin-top:4px">${totalW}·${totalDr}·${totalL}</div></div>
-    </div>
-    <div class="two-col">
-      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--green2)"></span>시즌 득점 순위</div>
-        <div style="position:relative;width:100%;height:${gSort.length*34+20}px"><canvas id="cg"></canvas></div></div>
-      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>시즌 어시스트 순위</div>
-        <div style="position:relative;width:100%;height:${aSort.length*34+20}px"><canvas id="ca"></canvas></div></div>
-    </div>
-    ${eSort.length?`<div class="panel" style="margin-bottom:16px">
-      <div class="panel-title"><span class="dot" style="background:var(--gold)"></span>경기당 공격 포인트
-        <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px">골+어시÷출전경기·최소5경기</span></div>
-      ${eSort.map((p,i)=>`<div class="rank-row">
-        <span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
-        <span style="font-size:10px;color:var(--muted);min-width:80px">${p.goals}골 ${p.assists}어시/${p.games}경기</span>
-        <div class="rk-bar-wrap"><div class="rk-bar" style="width:${(p.eff/eSort[0].eff*100).toFixed(0)}%;background:${EC[i]||EC[7]}"></div></div>
-        <span class="rk-val" style="color:var(--gold)">${p.eff.toFixed(2)}</span>
+    ${teams.length?`<div class="panel mb16">
+      <div class="panel-title"><span class="dot" style="background:var(--blue)"></span>내부 리그 팀 순위</div>
+      <div class="stand-row hdr"><div></div><div>팀명</div><div style="text-align:center">G</div><div style="text-align:center">W</div><div style="text-align:center">D</div><div style="text-align:center">L</div><div style="text-align:center">GD</div><div style="text-align:center">PTS</div></div>
+      ${teams.map((t,i)=>`<div class="stand-row">
+        ${rb(i)}<div style="font-weight:700">${t.name.replace('team','팀')}</div>
+        <div style="text-align:center;color:var(--muted)">${t.g}</div>
+        <div style="text-align:center;color:var(--green);font-weight:700">${t.w}</div>
+        <div style="text-align:center;color:var(--muted)">${t.d}</div>
+        <div style="text-align:center;color:var(--red)">${t.l}</div>
+        <div style="text-align:center;color:${t.gf-t.ga>=0?'var(--green)':'var(--red)'};font-weight:700">${t.gf-t.ga>=0?'+':''}${t.gf-t.ga}</div>
+        <div style="text-align:center;font-size:15px;font-weight:700;color:var(--blue2)">${t.pts}</div>
       </div>`).join('')}
     </div>`:''}
-    <div class="two-col">
-      <div class="panel">
-        <div class="panel-title"><span class="dot" style="background:var(--gold2)"></span>상대팀별 전적</div>
-        ${d.vsRecord.map(r=>{
-          const wP=r.games?(r.w/r.games*100).toFixed(0):0;
-          const dP=r.games?(r.d/r.games*100).toFixed(0):0;
-          const lP=r.games?(r.l/r.games*100).toFixed(0):0;
-          const wr=r.games?(r.w/r.games*100).toFixed(1):'0.0';
-          return`<div class="vs-team">
-            <div class="vs-head"><strong>vs ${r.opp}</strong><span>${r.games}경기·득${r.gf} 실${r.ga}</span></div>
-            <div class="vs-bar"><div class="vw" style="width:${wP}%"></div><div class="vd" style="width:${dP}%"></div><div class="vl" style="width:${lP}%"></div></div>
-            <div class="vs-sub"><span>${r.w}승 ${r.d}무 ${r.l}패</span>
-              <span style="color:${+wr>=50?'var(--green)':'var(--red2)'}">승률 ${wr}%</span></div>
-          </div>`;
-        }).join('')}
-        <hr class="div">
-        <div class="panel-title" style="margin-bottom:10px"><span class="dot" style="background:var(--gold2)"></span>시즌 포인트 TOP${pSort.length}</div>
-        ${barList(pSort.map(p=>({name:p.name,val:p.points})),'var(--gold2)')}
-      </div>
-      <div class="panel">
-        <div class="panel-title"><span class="dot" style="background:var(--red)"></span>상대팀별 다득점 TOP5</div>
-        ${Object.entries(d.topScorers).map(([opp,list])=>list.length?`<div class="top5-head">vs ${opp}</div>
-          ${list.map(s=>`<div class="top5-row"><span>${s.name}</span><span style="color:var(--green);font-weight:700">${s.goals} ⚽</span></div>`).join('')}`:''
-        ).join('')}
-        ${d.chem.length?`<hr class="div">
-        <div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:#E24B4A"></span>득점 TOP5 케미</div>
-        <div class="chem-row" style="font-size:11px;color:var(--muted)"><span class="chem-s">득점자</span><span class="chem-a">어시스트</span><span class="chem-p">지분</span></div>
-        ${d.chem.slice(0,12).map(c=>`<div class="chem-row"><span class="chem-s">${c.scorer}</span><span class="chem-a">↔ ${c.assist}</span><span class="chem-p">${c.pct}</span></div>`).join('')}`:''}
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-title"><span class="dot" style="background:var(--teal)"></span>클린시트 순위</div>
-      ${barList(cSort.map(p=>({name:p.name,val:p.clean})),'var(--teal)')}
-    </div>`;
-
+    ${d.recent.length?`<div class="panel mb16">
+      <div class="panel-title"><span class="dot" style="background:#185FA5"></span>최근 경기</div>
+      <div class="match-cards">${d.recent.slice(0,8).map(m=>{
+        const[t1,t2]=m.teams,g1=m.goals[t1]||0,g2=m.goals[t2]||0;
+        const sc=g1===g2?'var(--muted)':g1>g2?'var(--green)':'var(--red)';
+        return`<div class="mc-sm"><div style="font-size:9px;color:var(--muted)">${m.date.slice(5)}</div>
+          <div style="font-size:10px;font-weight:700">${t1.replace('team','팀')}</div>
+          <div style="font-size:17px;font-weight:700;color:${sc}">${g1}–${g2}</div>
+          <div style="font-size:10px;color:var(--muted)">${t2.replace('team','팀')}</div></div>`;
+      }).join('')}</div>
+    </div>`:''}
+    ${gSort.length||aSort.length?`<div class="two-col">
+      ${gSort.length?`<div class="panel"><div class="panel-title"><span class="dot" style="background:var(--green2)"></span>득점 순위</div>
+        <div style="position:relative;width:100%;height:${gSort.length*34+20}px"><canvas id="mc-g"></canvas></div></div>`:''}
+      ${aSort.length?`<div class="panel"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>어시스트 순위</div>
+        <div style="position:relative;width:100%;height:${aSort.length*34+20}px"><canvas id="mc-a"></canvas></div></div>`:''}
+    </div>`:''}
+    ${pSort.length?`<div class="panel mb16">
+      <div class="panel-title"><span class="dot" style="background:var(--gold)"></span>공격 포인트 순위 (골+어시)</div>
+      ${pSort.map((p,i)=>{const c=['#1565C0','#1976D2','#1E88E5','#2196F3','#42A5F5','#64B5F6','#90CAF9','#BBDEFB'][i]||'#BBDEFB';
+        return`<div class="rank-row"><span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
+          <span class="rk-detail">${p.g}골 ${p.a}어시</span>
+          <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(p.pts/pSort[0].pts*100)}%;background:${c}"></div></div>
+          <span class="rk-val" style="color:var(--blue2)">${p.pts}</span></div>`;}).join('')}
+    </div>`:''}
+    ${players.length?`<div class="panel"><div class="panel-title"><span class="dot" style="background:var(--muted)"></span>전체 선수 스탯</div>
+      <div class="table-wrap"><table><thead><tr><th>이름</th><th>골</th><th>어시</th><th>포인트</th><th>자책골</th></tr></thead>
+      <tbody>${players.sort((a,b)=>b.pts-a.pts).slice(0,30).map(p=>`<tr><td>${p.name}</td>
+        <td style="color:var(--green);font-weight:700">${p.g||'—'}</td>
+        <td style="color:var(--teal);font-weight:700">${p.a||'—'}</td>
+        <td style="color:var(--gold);font-weight:700">${p.pts||'—'}</td>
+        <td style="color:${p.og>0?'var(--red)':'var(--muted)'}">${p.og||'—'}</td></tr>`).join('')}
+      </tbody></table></div></div>`:''}
+  `;
   setTimeout(()=>{
     const tc='#5f5e5a',gc='rgba(0,0,0,0.06)';
-    const bOpts={indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.x}}},
-      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11}},beginAtZero:true},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}}};
-    if(gSort.length&&document.getElementById('cg')){
-      charts.g=new Chart(document.getElementById('cg'),{type:'bar',
-        data:{labels:gSort.map(p=>p.name),datasets:[{data:gSort.map(p=>p.goals),
-          backgroundColor:gSort.map((_,i)=>['#3B6D11','#639922','#97C459','#C0DD97','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE'][i]||'#EAF3DE'),borderRadius:4}]},
-        options:JSON.parse(JSON.stringify(bOpts))});}
-    if(aSort.length&&document.getElementById('ca')){
-      charts.a=new Chart(document.getElementById('ca'),{type:'bar',
-        data:{labels:aSort.map(p=>p.name),datasets:[{data:aSort.map(p=>p.assists),
-          backgroundColor:aSort.map((_,i)=>['#085041','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB'][i]||'#9FE1CB'),borderRadius:4}]},
-        options:JSON.parse(JSON.stringify(bOpts))});}
+    const bO={indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},datalabels:{anchor:'end',align:'end',color:'#5f5e5a',font:{size:11,weight:'600'},formatter:v=>v},tooltip:{callbacks:{label:c=>' '+c.parsed.x}}},
+      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11}},beginAtZero:true},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}},layout:{padding:{right:30}}};
+    if(gSort.length&&document.getElementById('mc-g'))CH['mc-g']=new Chart(document.getElementById('mc-g'),{type:'bar',data:{labels:gSort.map(p=>p.name),datasets:[{data:gSort.map(p=>p.g),backgroundColor:gSort.map((_,i)=>['#3B6D11','#639922','#97C459','#C0DD97','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE'][i]||'#EAF3DE'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
+    if(aSort.length&&document.getElementById('mc-a'))CH['mc-a']=new Chart(document.getElementById('mc-a'),{type:'bar',data:{labels:aSort.map(p=>p.name),datasets:[{data:aSort.map(p=>p.a),backgroundColor:aSort.map((_,i)=>['#085041','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB'][i]||'#9FE1CB'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
   },50);
 }
 
-function renderPlayers(){
-  const d=D; if(!d||!d.players.length)return;
-  const pl=[...d.players].sort((a,b)=>b.points-a.points);
-  document.getElementById('pl-content').innerHTML=`
-    <div style="font-size:20px;font-weight:700;margin-bottom:4px">👤 선수 스탯</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">전체 ${pl.length}명 · ${d.round} ${d.date}</div>
-    <div class="panel"><div class="table-wrap"><table>
-      <thead><tr><th>이름</th><th>백넘버</th><th>전체경기</th><th>필드</th><th>키퍼</th>
-        <th>골</th><th>어시</th><th>클린시트</th><th>포인트</th><th>실점</th><th>실점률</th><th>자책골</th></tr></thead>
-      <tbody>${pl.map(p=>`<tr>
-        <td>${p.name}</td>
-        <td><span class="num-pill">${p.num||'—'}</span></td>
-        <td>${p.games}</td><td>${p.field}</td><td>${p.keeper}</td>
+// ============== RENDER HARBOR ==============
+function renderHarbor(){
+  const d=HD;dch(['hb-g','hb-a']);
+  if(!d||!d.players.length){document.getElementById('harbor-content').innerHTML='<div class="loading-state">데이터 없음</div>';return;}
+  const tW=d.vs.reduce((s,v)=>s+v.w,0),tD=d.vs.reduce((s,v)=>s+v.d,0),tL=d.vs.reduce((s,v)=>s+v.l,0);
+  const tGF=d.vs.reduce((s,v)=>s+v.gf,0),tGA=d.vs.reduce((s,v)=>s+v.ga,0),tG=d.vs.reduce((s,v)=>s+v.games,0);
+  const tCS=d.players.reduce((s,p)=>s+p.clean,0);
+  const gS=[...d.players].sort((a,b)=>b.goals-a.goals).filter(p=>p.goals>0).slice(0,8);
+  const aS=[...d.players].sort((a,b)=>b.assists-a.assists).filter(p=>p.assists>0).slice(0,8);
+  const pS=[...d.players].sort((a,b)=>b.points-a.points).filter(p=>p.points>0).slice(0,6);
+  const cS=[...d.players].sort((a,b)=>b.clean-a.clean).filter(p=>p.clean>0).slice(0,6);
+  const eS=[...d.players].filter(p=>p.games>=5).map(p=>({...p,eff:(p.goals+p.assists)/p.games})).sort((a,b)=>b.eff-a.eff).slice(0,8);
+  const EC=['#BA7517','#EF9F27','#FAC775','#e8c870','#d4b45a','#c0a045','#ac8c30','#988020'];
+  document.getElementById('harbor-content').innerHTML=`
+    <div class="stat-row s6">
+      <div class="s-card"><div class="s-label">총 경기</div><div class="s-val">${tG||'—'}</div></div>
+      <div class="s-card"><div class="s-label">총 득점</div><div class="s-val" style="color:var(--green)">${tGF||'—'}</div></div>
+      <div class="s-card"><div class="s-label">클린시트</div><div class="s-val" style="color:var(--teal)">${tCS}</div></div>
+      <div class="s-card"><div class="s-label">총 실점</div><div class="s-val" style="color:var(--red)">${tGA||'—'}</div></div>
+      <div class="s-card"><div class="s-label">득실차</div><div class="s-val" style="color:var(--gold)">${tGF>=tGA?'+':''}${tGF-tGA}</div></div>
+      <div class="s-card"><div class="s-label">승·무·패</div><div class="s-val" style="color:var(--teal);font-size:13px;margin-top:4px">${tW}·${tD}·${tL}</div></div>
+    </div>
+    <div class="panel mb16"><div class="panel-title"><span class="dot" style="background:var(--gold2)"></span>팀별 스탯</div>
+      <div class="three-col" style="margin-bottom:0">${d.vs.map(r=>{
+        const wP=r.games?(r.w/r.games*100).toFixed(0):0,dP=r.games?(r.d/r.games*100).toFixed(0):0,lP=r.games?(r.l/r.games*100).toFixed(0):0,wr=r.games?(r.w/r.games*100).toFixed(1):'0.0';
+        return`<div style="background:var(--bg);border-radius:10px;padding:14px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px">vs ${r.opp}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;text-align:center;margin-bottom:10px">
+            <div><div style="font-size:9px;color:var(--muted)">경기</div><div style="font-size:17px;font-weight:700">${r.games}</div></div>
+            <div><div style="font-size:9px;color:var(--muted)">득점</div><div style="font-size:17px;font-weight:700;color:var(--green)">${r.gf}</div></div>
+            <div><div style="font-size:9px;color:var(--muted)">실점</div><div style="font-size:17px;font-weight:700;color:var(--red)">${r.ga}</div></div>
+          </div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;gap:1px;margin-bottom:5px">
+            <div style="background:var(--green2);width:${wP}%"></div><div style="background:#888;width:${dP}%"></div><div style="background:var(--red);width:${lP}%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px">
+            <span style="color:var(--muted)">${r.w}승 ${r.d}무 ${r.l}패</span>
+            <span style="color:${+wr>=50?'var(--green)':'var(--red2)'};font-weight:700">${wr}%</span>
+          </div></div>`;}).join('')}
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--green2)"></span>득점 순위</div>
+        <div style="position:relative;width:100%;height:${gS.length*34+20}px"><canvas id="hb-g"></canvas></div></div>
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>어시스트 순위</div>
+        <div style="position:relative;width:100%;height:${aS.length*34+20}px"><canvas id="hb-a"></canvas></div></div>
+    </div>
+    ${eS.length?`<div class="panel mb16"><div class="panel-title"><span class="dot" style="background:var(--gold)"></span>경기당 공격 포인트 <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px">최소 5경기</span></div>
+      ${eS.map((p,i)=>`<div class="rank-row"><span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
+        <span class="rk-detail">${p.goals}골 ${p.assists}어시/${p.games}경기</span>
+        <div class="rk-bar-wrap"><div class="rk-bar" style="width:${(p.eff/eS[0].eff*100).toFixed(0)}%;background:${EC[i]||EC[7]}"></div></div>
+        <span class="rk-val" style="color:var(--gold)">${p.eff.toFixed(2)}</span></div>`).join('')}
+    </div>`:''}
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><span class="dot" style="background:var(--red)"></span>상대팀별 다득점 TOP5</div>
+        ${Object.entries(d.topScorers).map(([opp,list])=>list.length?`<div class="top5-head">vs ${opp}</div>${list.map(s=>`<div class="top5-row"><span>${s.name}</span><span style="color:var(--green);font-weight:700">${s.goals}⚽</span></div>`).join('')}`:''
+        ).join('')}
+        <hr class="div">
+        <div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:var(--gold2)"></span>포인트 TOP6</div>
+        ${bList(pS.map(p=>({n:p.name,v:p.points})),'var(--gold2)')}
+      </div>
+      <div class="panel">
+        ${d.chem.length?`<div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:#E24B4A"></span>득점 케미</div>
+          <div class="chem-row" style="font-size:10px;color:var(--muted)"><span class="chem-s">득점자</span><span class="chem-a">어시</span><span class="chem-p">지분</span></div>
+          ${d.chem.slice(0,10).map(c=>`<div class="chem-row"><span class="chem-s">${c.s}</span><span class="chem-a">${c.a}</span><span class="chem-p">${c.p}</span></div>`).join('')}
+          <hr class="div">`:''}
+        <div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:var(--teal)"></span>클린시트 순위</div>
+        ${bList(cS.map(p=>({n:p.name,v:p.clean})),'var(--teal)')}
+      </div>
+    </div>
+    <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--muted)"></span>선수 전체 스탯 · ${d.round} ${d.date}</div>
+      <div class="table-wrap"><table><thead><tr><th>이름</th><th>번호</th><th>경기</th><th>골</th><th>어시</th><th>CS</th><th>포인트</th><th>실점</th><th>실점률</th></tr></thead>
+      <tbody>${[...d.players].sort((a,b)=>b.points-a.points).map(p=>`<tr><td>${p.name}</td>
+        <td style="color:var(--muted)">${p.num||'—'}</td><td>${p.games}</td>
         <td style="color:var(--green);font-weight:700">${p.goals||'—'}</td>
         <td style="color:var(--teal);font-weight:700">${p.assists||'—'}</td>
-        <td style="color:var(--teal)">${p.clean||'—'}</td>
+        <td>${p.clean||'—'}</td>
         <td style="color:var(--gold);font-weight:700">${p.points||'—'}</td>
         <td style="color:${p.conceded>0?'var(--red2)':'inherit'}">${p.conceded||'—'}</td>
-        <td>${p.concede_rate||'—'}</td>
-        <td>${p.og||'—'}</td>
-      </tr>`).join('')}</tbody>
-    </table></div></div>`;
+        <td>${p.cr}</td></tr>`).join('')}</tbody></table></div></div>
+  `;
+  setTimeout(()=>{
+    const tc='#5f5e5a',gc='rgba(0,0,0,0.06)';
+    const bO={indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'end',color:'#5f5e5a',font:{size:11,weight:'600'},formatter:v=>v},tooltip:{callbacks:{label:c=>' '+c.parsed.x}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11}},beginAtZero:true},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}},layout:{padding:{right:30}}};
+    if(gS.length&&document.getElementById('hb-g'))CH['hb-g']=new Chart(document.getElementById('hb-g'),{type:'bar',data:{labels:gS.map(p=>p.name),datasets:[{data:gS.map(p=>p.goals),backgroundColor:gS.map((_,i)=>['#3B6D11','#639922','#97C459','#C0DD97','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE'][i]||'#EAF3DE'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
+    if(aS.length&&document.getElementById('hb-a'))CH['hb-a']=new Chart(document.getElementById('hb-a'),{type:'bar',data:{labels:aS.map(p=>p.name),datasets:[{data:aS.map(p=>p.assists),backgroundColor:aS.map((_,i)=>['#085041','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB'][i]||'#9FE1CB'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
+  },50);
 }
 
-function renderHalf(){
-  const d=D;
-  if(!d||!d.halfStats.length){
-    document.getElementById('hf-content').innerHTML='<div class="loading-state"><p>전후반 데이터를 불러오지 못했습니다.</p></div>';
-    return;
+// ============== PUNGWOON ==============
+const PW={get p(){return JSON.parse(localStorage.getItem('pw_p')||'[]');},get m(){return JSON.parse(localStorage.getItem('pw_m')||'[]');},s(k,v){localStorage.setItem('pw_'+k,JSON.stringify(v));}};
+function renderPW(){
+  const pl=PW.p,matches=PW.m;
+  const tW=matches.filter(m=>m.gf>m.ga).length,tD=matches.filter(m=>m.gf===m.ga).length,tL=matches.filter(m=>m.gf<m.ga).length;
+  const tGF=matches.reduce((s,m)=>s+m.gf,0),tGA=matches.reduce((s,m)=>s+m.ga,0);
+  const reg=matches.filter(m=>m.type==='정기전').length,ev=matches.filter(m=>m.type==='이벤트').length;
+  const ps={};
+  for(const m of matches)for(const g of(m.goals||[])){
+    if(g.sc){if(!ps[g.sc])ps[g.sc]={name:g.sc,goals:0,assists:0,pts:0};ps[g.sc].goals++;ps[g.sc].pts++;}
+    if(g.as){if(!ps[g.as])ps[g.as]={name:g.as,goals:0,assists:0,pts:0};ps[g.as].assists++;ps[g.as].pts++;}
   }
-  const stats=[...d.halfStats].filter(p=>p.total>0).sort((a,b)=>b.total-a.total);
-  const tf=stats.reduce((s,p)=>s+p.first,0);
-  const ts=stats.reduce((s,p)=>s+p.second,0);
-  const ta=tf+ts;
-  document.getElementById('hf-content').innerHTML=`
-    <div style="font-size:20px;font-weight:700;margin-bottom:4px">⏱ 전후반 공격 포인트 분석</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">${d.round} ${d.date}</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;max-width:480px">
-      <div class="s-card"><div class="s-label">전체</div><div class="s-val" style="color:var(--teal)">${ta}</div></div>
-      <div class="s-card"><div class="s-label">🔵 전반</div><div class="s-val" style="color:#185FA5">${tf}<span style="font-size:12px;color:var(--muted);margin-left:4px">${ta?(tf/ta*100).toFixed(0):0}%</span></div></div>
-      <div class="s-card"><div class="s-label">🔴 후반</div><div class="s-val" style="color:#E24B4A">${ts}<span style="font-size:12px;color:var(--muted);margin-left:4px">${ta?(ts/ta*100).toFixed(0):0}%</span></div></div>
+  const pArr=Object.values(ps).sort((a,b)=>b.pts-a.pts);
+  document.getElementById('pungwoon-content').innerHTML=`
+    ${matches.length===0&&pl.length===0?`<div class="panel mb16" style="text-align:center;padding:32px">
+      <div style="font-size:36px;margin-bottom:10px">🌟</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">풍운FC 데이터가 없어요!</div>
+      <div style="font-size:12px;color:var(--muted)">상단 + 선수 / + 경기 버튼으로 입력하세요</div></div>`:`
+    <div class="stat-row s5">
+      <div class="s-card"><div class="s-label">총 경기</div><div class="s-val">${matches.length}</div></div>
+      <div class="s-card"><div class="s-label">득점</div><div class="s-val" style="color:var(--green)">${tGF}</div></div>
+      <div class="s-card"><div class="s-label">실점</div><div class="s-val" style="color:var(--red)">${tGA}</div></div>
+      <div class="s-card"><div class="s-label">득실차</div><div class="s-val" style="color:var(--gold)">${tGF>=tGA?'+':''}${tGF-tGA}</div></div>
+      <div class="s-card"><div class="s-label">승·무·패</div><div class="s-val" style="color:var(--teal);font-size:13px;margin-top:4px">${tW}·${tD}·${tL}</div></div>
     </div>
+    <div class="two-col">
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--pungwoon)"></span>경기 유형</div>
+        <div style="display:flex;gap:10px">
+          <div class="s-card" style="flex:1"><div class="s-label">일요일 정기전</div><div class="s-val" style="color:#9c27b0">${reg}경기</div></div>
+          <div class="s-card" style="flex:1"><div class="s-label">이벤트 매치</div><div class="s-val" style="color:var(--gold)">${ev}경기</div></div>
+        </div>
+      </div>
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--green2)"></span>득점 순위</div>
+        ${pArr.slice(0,5).map((p,i)=>`<div class="rank-row"><span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
+          <span class="rk-detail">${p.goals}골 ${p.assists}어시</span>
+          <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(p.goals/(pArr[0]?.goals||1)*100)}%;background:#9c27b0"></div></div>
+          <span class="rk-val" style="color:#9c27b0">${p.pts}</span></div>`).join('')||'<div style="color:var(--muted);font-size:12px">득점 기록 없음</div>'}
+      </div>
+    </div>`}
+    <div class="panel mb16"><div class="panel-title"><span class="dot" style="background:#185FA5"></span>경기 기록</div>
+      ${matches.length===0?`<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">경기 기록이 없습니다</div>`:`
+      <div class="table-wrap"><table><thead><tr><th>날짜</th><th>유형</th><th>상대팀</th><th>득점</th><th>실점</th><th>결과</th><th></th></tr></thead>
+      <tbody>${matches.sort((a,b)=>b.date.localeCompare(a.date)).map(m=>{
+        const res=m.gf>m.ga?'승':m.gf<m.ga?'패':'무';
+        const rc=m.gf>m.ga?'var(--green)':m.gf<m.ga?'var(--red2)':'var(--muted)';
+        return`<tr><td>${m.date}</td><td><span style="font-size:10px;background:var(--bg);padding:2px 6px;border-radius:4px;color:var(--muted)">${m.type}</span></td>
+          <td>${m.opp||'—'}</td><td style="color:var(--green);font-weight:700">${m.gf}</td><td style="color:var(--red)">${m.ga}</td>
+          <td style="color:${rc};font-weight:700">${res}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="delPwMatch('${m.id}')">삭제</button></td></tr>`;}).join('')}</tbody></table></div>`}
+    </div>
+    ${pl.length?`<div class="panel"><div class="panel-title"><span class="dot" style="background:var(--pungwoon)"></span>등록 선수 (${pl.length}명)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${pl.map(p=>`<div style="background:var(--bg);border-radius:8px;padding:7px 11px;font-size:12px;display:flex;align-items:center;gap:7px">
+        <span style="background:var(--pungwoon);color:#f8bbd9;font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px">${p.num||'?'}</span>
+        <span style="font-weight:700">${p.name}</span><span style="color:var(--muted);font-size:10px">${p.pos}</span>
+        <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px" onclick="delPwPlayer('${p.id}')">✕</button>
+      </div>`).join('')}</div></div>`:''}
+  `;
+}
+function openModal(id){
+  if(id==='modal-pw-match'){document.getElementById('pw-mid').value='';document.getElementById('pw-mdate').value=new Date().toISOString().slice(0,10);document.getElementById('pw-glist').innerHTML='';document.getElementById('pw-mgf').value=0;document.getElementById('pw-mga').value=0;document.getElementById('pw-mopp').value='';}
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function savePwPlayer(){
+  const name=document.getElementById('pw-pname').value.trim();
+  if(!name){alert('이름 입력');return;}
+  const id=document.getElementById('pw-pid').value||Date.now().toString();
+  const pl=PW.p.filter(p=>p.id!==id);
+  pl.push({id,name,num:document.getElementById('pw-pnum').value,pos:document.getElementById('pw-ppos').value});
+  PW.s('p',pl);closeModal('modal-pw-player');renderPW();showToast('선수 추가!','var(--pungwoon)','#f8bbd9');
+}
+function delPwPlayer(id){if(!confirm('삭제?'))return;PW.s('p',PW.p.filter(p=>p.id!==id));renderPW();}
+function addGoalRow(){
+  const pl=PW.p;const opts='<option value="">선택</option>'+pl.map(p=>`<option>${p.name}</option>`).join('');
+  const d=document.createElement('div');d.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px';
+  d.innerHTML=`<select style="flex:1;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg)">${opts}</select>
+    <span style="font-size:11px;color:var(--muted)">→</span>
+    <select style="flex:1;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg)"><option value="">어시없음</option>${pl.map(p=>`<option>${p.name}</option>`).join('')}</select>
+    <button onclick="this.parentNode.remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px">✕</button>`;
+  document.getElementById('pw-glist').appendChild(d);
+}
+function savePwMatch(){
+  const date=document.getElementById('pw-mdate').value;if(!date){alert('날짜 입력');return;}
+  const goals=[];document.querySelectorAll('#pw-glist > div').forEach(row=>{const s=row.querySelectorAll('select');if(s[0].value)goals.push({sc:s[0].value,as:s[1].value||null});});
+  const id=document.getElementById('pw-mid').value||Date.now().toString();
+  const m=PW.m.filter(x=>x.id!==id);
+  m.push({id,date,type:document.getElementById('pw-mtype').value,opp:document.getElementById('pw-mopp').value,gf:+document.getElementById('pw-mgf').value,ga:+document.getElementById('pw-mga').value,goals});
+  PW.s('m',m);closeModal('modal-pw-match');renderPW();showToast('경기 저장!','var(--pungwoon)','#f8bbd9');
+}
+function delPwMatch(id){if(!confirm('삭제?'))return;PW.s('m',PW.m.filter(m=>m.id!==id));renderPW();}
+
+// ============== RIVAL ==============
+function getRD(){const def={p1:{name:'박성언',games:13,goals:8,assists:14,pts:22},p2:{name:'주건호',games:17,goals:30,assists:20,pts:50}};const s=localStorage.getItem('rival_d');return s?JSON.parse(s):def;}
+function saveRival(){
+  const d=getRD();
+  ['g','go','a','p'].forEach(k=>{
+    const v1=+document.getElementById('ri-p1'+k).value;const v2=+document.getElementById('ri-p2'+k).value;
+    const field={g:'games',go:'goals',a:'assists',p:'pts'}[k];
+    if(v1>0)d.p1[field]=v1;if(v2>0)d.p2[field]=v2;
+  });
+  localStorage.setItem('rival_d',JSON.stringify(d));closeModal('modal-rival');renderRival();showToast('업데이트!','#2a1a0a','#ff9800');
+}
+function openRivalInput(){
+  const d=getRD();
+  document.getElementById('ri-p1g').value=d.p1.games;document.getElementById('ri-p1go').value=d.p1.goals;
+  document.getElementById('ri-p1a').value=d.p1.assists;document.getElementById('ri-p1p').value=d.p1.pts;
+  document.getElementById('ri-p2g').value=d.p2.games;document.getElementById('ri-p2go').value=d.p2.goals;
+  document.getElementById('ri-p2a').value=d.p2.assists;document.getElementById('ri-p2p').value=d.p2.pts;
+  document.getElementById('modal-rival').classList.add('open');
+}
+function renderRival(){
+  const d=getRD();const p1=d.p1,p2=d.p2,gap=p2.pts-p1.pts;
+  const leading=gap>0?p2.name:gap<0?p1.name:'동점';
+  const lc=gap>0?'#B71C1C':'#1565C0';
+  const le=gap>0?'🦁':'🦅';
+  const fun=gap>25?['주건호 압도중 🔥','박성언 역전 가능?😅','밥값 걱정 ㅋㅋ']:gap>10?['접전이지만...','역전 노려야지']:gap===0?['완전 동점!🤯']:['박성언 리드!💪','주건호 위기😱'];
+  function cmpBar(v1,v2){const t=v1+v2||1;return`<div class="cmp-bar"><div class="cmp-p1" style="width:${(v1/t*100).toFixed(0)}%"></div><div class="cmp-p2" style="width:${(v2/t*100).toFixed(0)}%"></div></div>`;}
+  document.getElementById('rival-content').innerHTML=`
+    <div class="rival-grid">
+      <div class="rival-player p1">
+        <div style="font-size:28px;margin-bottom:6px">🦅</div>
+        <div style="font-size:18px;font-weight:700;color:#1565C0">${p1.name}</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px">공격형 미드필더</div>
+        <div style="font-size:34px;font-weight:700;color:#1565C0;margin:6px 0">${p1.pts}<span style="font-size:13px;font-weight:400"> pts</span></div>
+        <div style="font-size:11px;color:var(--muted)">${p1.games}경기 · ${p1.goals}골 · ${p1.assists}도움</div>
+      </div>
+      <div class="rival-vs">VS</div>
+      <div class="rival-player p2">
+        <div style="font-size:28px;margin-bottom:6px">🦁</div>
+        <div style="font-size:18px;font-weight:700;color:#B71C1C">${p2.name}</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px">스트라이커</div>
+        <div style="font-size:34px;font-weight:700;color:#B71C1C;margin:6px 0">${p2.pts}<span style="font-size:13px;font-weight:400"> pts</span></div>
+        <div style="font-size:11px;color:var(--muted)">${p2.games}경기 · ${p2.goals}골 · ${p2.assists}도움</div>
+      </div>
+    </div>
+
+    <div class="meal-box">
+      <h3>🍽️ 2026 밥 내기 현황</h3>
+      <div style="display:flex;justify-content:center;gap:24px;margin-bottom:14px">
+        <div style="text-align:center"><div style="font-size:10px;color:#ffcc80">${p1.name}</div><div style="font-size:30px;font-weight:700;color:#64B5F6">${p1.pts}</div></div>
+        <div style="display:flex;align-items:center;font-size:20px">🆚</div>
+        <div style="text-align:center"><div style="font-size:10px;color:#ffcc80">${p2.name}</div><div style="font-size:30px;font-weight:700;color:#EF9A9A">${p2.pts}</div></div>
+      </div>
+      ${cmpBar(p1.pts,p2.pts)}
+      <div style="margin-top:10px">
+        <span style="display:inline-block;padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;background:${lc};color:#fff">${leading} ${Math.abs(gap)}점 앞서는 중 ${le}</span>
+      </div>
+      <div style="margin-top:10px;font-size:13px;color:#ffcc80;font-style:italic">"${fun[0]}"</div>
+      <div style="margin-top:12px;font-size:10px;color:#ffcc80;opacity:.6">※ 2026년 12월 31일 기준 낮은 포인트 = 밥값</div>
+    </div>
+
+    <div class="panel mb16">
+      <div class="panel-title" style="justify-content:space-between">
+        <div><span class="dot" style="background:#ff9800"></span>스탯 비교</div>
+        <button class="btn btn-sm" style="background:#2a1a0a;color:#ff9800;" onclick="openRivalInput()">✏️ 수정</button>
+      </div>
+      ${[{lbl:'⚽ 총 득점',v1:p1.goals,v2:p2.goals},{lbl:'🎯 총 도움',v1:p1.assists,v2:p2.assists},{lbl:'📊 총 포인트',v1:p1.pts,v2:p2.pts},{lbl:'🏃 출전 경기',v1:p1.games,v2:p2.games}].map(st=>{
+        const w=st.v1>st.v2?p1.name:st.v1<st.v2?p2.name:'동점';
+        const wc=st.v1>st.v2?'#1565C0':st.v1<st.v2?'#B71C1C':'#888';
+        return`<div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <div style="font-size:12px;font-weight:700">${st.lbl}</div>
+            <div style="font-size:10px;color:${wc};font-weight:700">${w} 우위</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:3px">
+            <span style="color:#1565C0">${st.v1}</span><span style="color:#B71C1C">${st.v2}</span>
+          </div>${cmpBar(st.v1,st.v2)}</div>`;}).join('')}
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><span class="dot" style="background:#1565C0"></span>🦅 ${p1.name} 경기당</div>
+        ${[['경기당 골',(p1.goals/p1.games).toFixed(2)],['경기당 도움',(p1.assists/p1.games).toFixed(2)],['경기당 포인트',(p1.pts/p1.games).toFixed(2)]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">${l}</span><span style="font-weight:700;color:#1565C0">${v}</span></div>`).join('')}
+        <div style="margin-top:12px;padding:10px;background:#E3F2FD;border-radius:8px;text-align:center">
+          <div style="font-size:10px;color:#1565C0;margin-bottom:2px">역전까지 필요한 포인트</div>
+          <div style="font-size:16px;font-weight:700;color:#1565C0">${Math.max(0,gap+1)}점</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="dot" style="background:#B71C1C"></span>🦁 ${p2.name} 경기당</div>
+        ${[['경기당 골',(p2.goals/p2.games).toFixed(2)],['경기당 도움',(p2.assists/p2.games).toFixed(2)],['경기당 포인트',(p2.pts/p2.games).toFixed(2)]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">${l}</span><span style="font-weight:700;color:#B71C1C">${v}</span></div>`).join('')}
+        <div style="margin-top:12px;padding:10px;background:#FFEBEE;border-radius:8px;text-align:center">
+          <div style="font-size:10px;color:#B71C1C;margin-bottom:2px">현재 리드</div>
+          <div style="font-size:16px;font-weight:700;color:#B71C1C">${Math.abs(gap)}점</div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel">
-      <div class="panel-title"><span class="dot" style="background:#185FA5"></span>전반<span class="dot" style="background:#E24B4A;margin-left:6px"></span>후반</div>
-      ${stats.map(p=>`<div style="margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px">
-          <span>${p.name}</span>
-          <span style="font-size:11px;color:var(--muted);font-weight:400">전반 ${p.first} (${p.firstPct.toFixed(0)}%) · 후반 ${p.second} (${p.secondPct.toFixed(0)}%) · 합 ${p.total}</span>
-        </div>
-        <div class="half-bar-wrap">
-          <div class="half-first" style="width:${p.firstPct.toFixed(0)}%"></div>
-          <div class="half-second" style="width:${p.secondPct.toFixed(0)}%"></div>
-        </div>
-      </div>`).join('')}
-    </div>`;
+      <div class="panel-title"><span class="dot" style="background:#ff9800"></span>📈 연간 페이스 예측</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        ${[p1,p2].map((p,idx)=>{
+          const c=idx===0?'#1565C0':'#B71C1C',em=idx===0?'🦅':'🦁';
+          const mo=2.5;
+          return`<div style="background:var(--bg);border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:13px;font-weight:700;color:${c};margin-bottom:8px">${em} ${p.name}</div>
+            <div style="font-size:11px;color:var(--muted)">현재: ${p.goals}골 ${p.assists}도움 = ${p.pts}pts</div>
+            <div style="border-top:1px solid var(--border);margin:8px 0;padding-top:8px">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">연말 예상 (현 페이스 기준)</div>
+              <div style="font-size:20px;font-weight:700;color:${c}">${Math.round(p.pts/mo*12)}pts</div>
+              <div style="font-size:11px;color:var(--muted)">${Math.round(p.goals/mo*12)}골 ${Math.round(p.assists/mo*12)}도움</div>
+            </div>
+          </div>`;}).join('')}
+      </div>
+    </div>
+  `;
 }
 
-// 시작: 내장 데이터 즉시 표시 후 실시간 fetch 시도
-D = EMBEDDED;
-document.getElementById('last-updated').textContent=`연결 중...`;
-renderAll();
-loadData();
+// ============== UTILS ==============
+function bList(data,color){
+  if(!data.length)return'';
+  const max=Math.max(...data.map(d=>d.v),1);
+  return data.map((d,i)=>`<div class="rank-row"><span class="rk-num">${i+1}</span><span class="rk-name">${d.n}</span><div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(d.v/max*100)}%;background:${color}"></div></div><span class="rk-val" style="color:${color}">${d.v}</span></div>`).join('');
+}
+function dch(ids){ids.forEach(id=>{if(CH[id]){try{CH[id].destroy();}catch(e){}delete CH[id];}});}
+function showToast(msg,bg='#1a3a1a',tc='#EF9F27'){
+  const t=document.createElement('div');t.className='toast';t.style.cssText=`background:${bg};color:${tc};`;t.textContent='✓ '+msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ============== INIT ==============
+document.getElementById('pw-mdate').value=new Date().toISOString().slice(0,10);
+Chart.register(ChartDataLabels);
+refreshData();
+renderPW();
+renderRival();
 </script>
 </body>
 </html>
