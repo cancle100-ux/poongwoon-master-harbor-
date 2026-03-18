@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>하버FC 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:#f4f3ef;--bg2:#fff;--border:#e4e2da;--text:#1a1a18;--muted:#888780;
+  --green:#3B6D11;--green2:#639922;--teal:#1D9E75;--gold:#BA7517;--gold2:#EF9F27;
+  --red:#D85A30;--red2:#A32D2D;--dark:#1a3a1a;--radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);}
+.nav{background:var(--dark);padding:0 20px;display:flex;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.3);flex-wrap:wrap;}
+.nav-logo{color:var(--gold2);font-size:18px;font-weight:700;padding:14px 20px 14px 0;border-right:1px solid rgba(255,255,255,0.1);margin-right:8px;}
+.nav-tab{color:rgba(255,255,255,0.55);font-size:13px;font-weight:500;padding:14px 14px;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;}
+.nav-tab:hover{color:#fff;}
+.nav-tab.active{color:var(--gold2);border-bottom-color:var(--gold2);}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.sync-btn{background:rgba(239,159,39,.15);border:1px solid rgba(239,159,39,.3);color:var(--gold2);font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .15s;}
+.sync-btn:hover{background:rgba(239,159,39,.25);}
+.sync-btn.loading{opacity:.6;pointer-events:none;}
+.last-updated{color:#9FE1CB;font-size:11px;white-space:nowrap;}
+.page{display:none;padding:24px 20px;max-width:1100px;margin:0 auto;}
+.page.active{display:block;}
+.loading-state{text-align:center;padding:80px 20px;color:var(--muted);}
+.spin{font-size:36px;display:inline-block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-box{background:#FCEBEB;border:1px solid #f7c1c1;border-radius:var(--radius);padding:20px;color:var(--red2);text-align:center;margin:20px 0;}
+.stat-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;}
+.s-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;}
+.s-label{font-size:11px;color:var(--muted);margin-bottom:5px;}
+.s-val{font-size:22px;font-weight:700;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.panel-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;}
+.vs-team{margin-bottom:12px;}
+.vs-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;}
+.vs-head strong{color:var(--text);}
+.vs-bar{height:10px;border-radius:5px;overflow:hidden;display:flex;gap:1px;}
+.vw{background:var(--green2);}.vd{background:#888780;}.vl{background:var(--red);}
+.vs-sub{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;}
+.rank-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
+.rk-num{color:var(--muted);font-size:11px;min-width:16px;text-align:right;}
+.rk-name{font-weight:700;min-width:52px;}
+.rk-bar-wrap{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.rk-bar{height:100%;border-radius:4px;}
+.rk-val{min-width:28px;text-align:right;font-size:11px;font-weight:700;}
+.chem-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.chem-row:last-child{border-bottom:none;}
+.chem-s{font-weight:700;min-width:52px;}
+.chem-a{color:var(--muted);}
+.chem-p{color:var(--gold);font-weight:700;}
+.top5-head{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg);padding:4px 8px;border-radius:6px;margin-bottom:4px;margin-top:8px;}
+.top5-row{display:flex;justify-content:space-between;padding:3px 6px;font-size:12px;}
+.half-row{margin-bottom:10px;}
+.half-bar-wrap{height:10px;background:#e4e2da;border-radius:5px;overflow:hidden;display:flex;}
+.half-first{background:#185FA5;}.half-second{background:#E24B4A;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{background:var(--bg);font-size:11px;font-weight:700;color:var(--muted);padding:8px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap;}
+thead th:first-child,thead th:nth-child(2){text-align:left;}
+tbody td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--border);}
+tbody td:first-child{text-align:left;font-weight:700;}
+tbody td:nth-child(2){text-align:left;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--bg);}
+.num-pill{display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:11px;font-weight:700;color:var(--muted);}
+hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
+@media(max-width:600px){
+  .stat-row{grid-template-columns:repeat(3,1fr);}
+  .two-col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">⚽ 하버FC</div>
+  <div class="nav-tab active" onclick="switchTab('dashboard',this)">📊 대시보드</div>
+  <div class="nav-tab" onclick="switchTab('players',this)">👤 선수 스탯</div>
+  <div class="nav-tab" onclick="switchTab('half',this)">⏱ 전후반</div>
+  <div class="nav-right">
+    <span class="last-updated" id="last-updated">—</span>
+    <button class="sync-btn" id="sync-btn" onclick="loadData()">🔄 새로고침</button>
+  </div>
+</nav>
+<div class="page active" id="page-dashboard"><div id="db-content"><div class="loading-state"><div class="spin">⚽</div><p style="margin-top:12px">구글 시트에서 실시간 데이터 불러오는 중...</p></div></div></div>
+<div class="page" id="page-players"><div id="pl-content"></div></div>
+<div class="page" id="page-half"><div id="hf-content"></div></div>
+
+<script>
+const SHEET_ID='1cM4UhB-nL6smf4OIn_lqQ0on1AtYG2ff_haIXBvXnK0';
+const GID='1445436566';
+let charts={}, D=null, timer=null;
+
+function switchTab(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(D) renderAll();
+}
+
+// JSONP 방식 - 로컬 file:// 에서도 CORS 없이 작동
+function loadData(){
+  const btn=document.getElementById('sync-btn');
+  btn.classList.add('loading'); btn.textContent='⏳ 로딩 중...';
+  if(timer) clearInterval(timer);
+
+  // 기존 스크립트 태그 제거
+  const old=document.getElementById('gviz-script');
+  if(old) old.remove();
+
+  // JSONP 콜백 전역 함수
+  window._gvizCallback=function(resp){
+    try{
+      const table=resp.table;
+      const cols=table.cols.length;
+      const rows=table.rows.map(r=>
+        Array.from({length:cols},(_,i)=>{
+          const c=r.c&&r.c[i];
+          if(!c||c.v===null||c.v===undefined) return '';
+          return String(c.f!==undefined&&c.f!==null ? c.f : c.v);
+        })
+      );
+      D=parse(rows);
+      const n=new Date();
+      document.getElementById('last-updated').textContent=
+        `업데이트 ${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} (5분 자동갱신)`;
+      renderAll();
+      timer=setInterval(loadData, 5*60*1000);
+    }catch(e){
+      console.error(e);
+      showError(e.message);
+    }finally{
+      btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
+    }
+  };
+
+  // 오류 타임아웃 (10초)
+  const timeout=setTimeout(()=>{
+    btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
+    showError('요청 시간 초과 — 네트워크 확인 또는 구글 시트 공유 설정을 확인해주세요.');
+  }, 10000);
+  window._gvizCallback._timeout=timeout;
+
+  const orig=window._gvizCallback;
+  window._gvizCallback=function(resp){
+    clearTimeout(timeout);
+    orig(resp);
+  };
+
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=reqId:1&callback=_gvizCallback&gid=${GID}&t=${Date.now()}`;
+  const s=document.createElement('script');
+  s.id='gviz-script'; s.src=url;
+  s.onerror=()=>{
+    clearTimeout(timeout);
+    btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
+    showError('스크립트 로드 실패 — 구글 시트 공유 설정을 확인해주세요.');
+  };
+  document.head.appendChild(s);
+}
+
+function showError(msg){
+  ['db-content','pl-content','hf-content'].forEach(id=>{
+    document.getElementById(id).innerHTML=`<div class="error-box">⚠️ 데이터 불러오기 실패: ${msg}<br><small style="margin-top:8px;display:block">구글 시트 → 공유 → "링크가 있는 모든 사용자(뷰어)"로 설정해주세요.</small></div>`;
+  });
+}
+
+function parseCSV(text){
+  const rows=[];
+  let cur='',inQ=false,row=[];
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){row.push(cur.trim());cur='';}
+    else if((c==='\n'||c==='\r')&&!inQ){
+      if(cur!==''||row.length){row.push(cur.trim());rows.push(row);}
+      cur='';row=[];
+      if(c==='\r'&&text[i+1]==='\n')i++;
+    }else{cur+=c;}
+  }
+  if(cur!==''||row.length){row.push(cur.trim());rows.push(row);}
+  return rows;
+}
+
+function parse(rows){
+  const d={date:'',round:'',players:[],vsRecord:[],topScorers:{},chem:[],halfStats:[]};
+  // Row 0: date col9, round col11
+  if(rows[0]){
+    for(let c=8;c<14;c++){if(rows[0][c]&&rows[0][c].match(/\d{4}-\d{2}-\d{2}/)){d.date=rows[0][c];break;}}
+    for(let c=10;c<16;c++){if(rows[0][c]&&rows[0][c].includes('라운드')){d.round=rows[0][c];break;}}
+  }
+  // Players: find header row with '이름'
+  let hRow=-1;
+  for(let i=0;i<rows.length;i++){if(rows[i][2]==='이름'){hRow=i;break;}}
+  if(hRow>=0){
+    for(let i=hRow+1;i<rows.length;i++){
+      const r=rows[i], name=r[2];
+      if(!name)break;
+      d.players.push({
+        year:r[0]||'',num:r[1]||'',name,
+        games:+r[3]||0,field:+r[4]||0,keeper:+r[5]||0,
+        goals:+r[6]||0,assists:+r[7]||0,clean:+r[8]||0,
+        points:+r[9]||0,conceded:+r[10]||0,
+        concede_rate:r[11]||'0.00',og:+r[12]||0
+      });
+    }
+  }
+  // vs record: col15=opponent name, col16=games(number)
+  const OPPS=new Set(['아이콘','터틀파크','한울']);
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i];
+    if(r[15]&&OPPS.has(r[15])&&r[16]&&!isNaN(+r[16])&&+r[16]>0){
+      d.vsRecord.push({opp:r[15],games:+r[16],w:+r[17]||0,d:+r[18]||0,l:+r[19]||0,gf:+r[20]||0,ga:+r[21]||0});
+    }
+  }
+  // Top scorers by opp: col15=opp, col16=player(text), col17=goals
+  // detect "상대팀별 다득점" section
+  let topSection=false, curOpp=null;
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i];
+    if(r[15]&&r[15].includes('다득점')){topSection=true;continue;}
+    if(!topSection)continue;
+    if(r[15]&&OPPS.has(r[15])){
+      curOpp=r[15];
+      if(!d.topScorers[curOpp])d.topScorers[curOpp]=[];
+      if(r[16]&&r[17]&&!isNaN(+r[17]))d.topScorers[curOpp].push({name:r[16],goals:+r[17]});
+    }else if(curOpp&&!r[15]&&r[16]&&r[17]&&!isNaN(+r[17])){
+      d.topScorers[curOpp].push({name:r[16],goals:+r[17]});
+    }else if(r[15]&&!OPPS.has(r[15])&&r[15]!=='상대팀'){
+      if(r[15].includes('케미')||r[15].includes('포인트')||r[15].includes('전반'))break;
+    }
+  }
+  // Chemistry: col19=scorer, col20=assist, col22=pct%
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i];
+    if(r[19]&&r[22]&&r[22].includes('%')&&r[19]!=='득점자'){
+      d.chem.push({scorer:r[19],assist:r[20]||'단독',pct:r[22]});
+    }
+  }
+  // Half stats: find '선수명' header in col15
+  let halfH=false;
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i];
+    if(r[15]==='선수명'&&r[16]==='전반'){halfH=true;continue;}
+    if(halfH&&r[15]&&r[15]!==''&&r[19]&&r[19].includes('%')){
+      d.halfStats.push({name:r[15],first:+r[16]||0,second:+r[17]||0,total:+r[18]||0,firstPct:parseFloat(r[19])||0,secondPct:parseFloat(r[20])||0});
+    }
+  }
+  return d;
+}
+
+function renderAll(){
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});
+  charts={};
+  renderDashboard();
+  renderPlayers();
+  renderHalf();
+}
+
+function barList(data,color){
+  if(!data.length)return '';
+  const max=Math.max(...data.map(d=>d.val),1);
+  return data.map((d,i)=>`<div class="rank-row">
+    <span class="rk-num">${i+1}</span>
+    <span class="rk-name">${d.name}</span>
+    <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(d.val/max*100)}%;background:${color}"></div></div>
+    <span class="rk-val" style="color:${color}">${d.val}</span>
+  </div>`).join('');
+}
+
+function renderDashboard(){
+  const d=D; if(!d||!d.players.length)return;
+  const totalW=d.vsRecord.reduce((s,v)=>s+v.w,0);
+  const totalDr=d.vsRecord.reduce((s,v)=>s+v.d,0);
+  const totalL=d.vsRecord.reduce((s,v)=>s+v.l,0);
+  const totalGF=d.vsRecord.reduce((s,v)=>s+v.gf,0);
+  const totalGA=d.vsRecord.reduce((s,v)=>s+v.ga,0);
+  const totalG=d.vsRecord.reduce((s,v)=>s+v.games,0);
+  const totalClean=d.players.reduce((s,p)=>s+p.clean,0);
+  const gSort=[...d.players].sort((a,b)=>b.goals-a.goals).filter(p=>p.goals>0).slice(0,8);
+  const aSort=[...d.players].sort((a,b)=>b.assists-a.assists).filter(p=>p.assists>0).slice(0,8);
+  const pSort=[...d.players].sort((a,b)=>b.points-a.points).filter(p=>p.points>0).slice(0,6);
+  const cSort=[...d.players].sort((a,b)=>b.clean-a.clean).filter(p=>p.clean>0).slice(0,7);
+  const eSort=[...d.players].filter(p=>p.games>=5).map(p=>({...p,eff:(p.goals+p.assists)/p.games})).sort((a,b)=>b.eff-a.eff).slice(0,8);
+  const EC=['#BA7517','#EF9F27','#FAC775','#e8c870','#d4b45a','#c0a045','#ac8c30','#988020'];
+
+  document.getElementById('db-content').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div><div style="font-size:20px;font-weight:700">⚽ 하버FC 대시보드</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px">화요일 친선전 · ${d.round} · ${d.date}</div></div>
+    </div>
+    <div class="stat-row">
+      <div class="s-card"><div class="s-label">총 경기</div><div class="s-val">${totalG||'—'}</div></div>
+      <div class="s-card"><div class="s-label">총 득점</div><div class="s-val" style="color:var(--green)">${totalGF||'—'}</div></div>
+      <div class="s-card"><div class="s-label">클린시트</div><div class="s-val" style="color:var(--teal)">${totalClean}</div></div>
+      <div class="s-card"><div class="s-label">총 실점</div><div class="s-val" style="color:var(--red)">${totalGA||'—'}</div></div>
+      <div class="s-card"><div class="s-label">득실차</div><div class="s-val" style="color:var(--gold)">${totalGF&&totalGA?(totalGF>=totalGA?'+':'')+(totalGF-totalGA):'—'}</div></div>
+      <div class="s-card"><div class="s-label">승·무·패</div><div class="s-val" style="color:var(--teal);font-size:15px;margin-top:4px">${totalW}·${totalDr}·${totalL}</div></div>
+    </div>
+    <div class="two-col">
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--green2)"></span>시즌 득점 순위</div>
+        <div style="position:relative;width:100%;height:${gSort.length*34+20}px"><canvas id="cg"></canvas></div></div>
+      <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>시즌 어시스트 순위</div>
+        <div style="position:relative;width:100%;height:${aSort.length*34+20}px"><canvas id="ca"></canvas></div></div>
+    </div>
+    ${eSort.length?`<div class="panel" style="margin-bottom:16px">
+      <div class="panel-title"><span class="dot" style="background:var(--gold)"></span>경기당 공격 포인트
+        <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px">골+어시÷출전경기·최소5경기</span></div>
+      ${eSort.map((p,i)=>`<div class="rank-row">
+        <span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
+        <span style="font-size:10px;color:var(--muted);min-width:80px">${p.goals}골 ${p.assists}어시/${p.games}경기</span>
+        <div class="rk-bar-wrap"><div class="rk-bar" style="width:${(p.eff/eSort[0].eff*100).toFixed(0)}%;background:${EC[i]||EC[7]}"></div></div>
+        <span class="rk-val" style="color:var(--gold)">${p.eff.toFixed(2)}</span>
+      </div>`).join('')}
+    </div>`:''}
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><span class="dot" style="background:var(--gold2)"></span>상대팀별 전적</div>
+        ${d.vsRecord.map(r=>{
+          const wP=r.games?(r.w/r.games*100).toFixed(0):0;
+          const dP=r.games?(r.d/r.games*100).toFixed(0):0;
+          const lP=r.games?(r.l/r.games*100).toFixed(0):0;
+          const wr=r.games?(r.w/r.games*100).toFixed(1):'0.0';
+          return`<div class="vs-team">
+            <div class="vs-head"><strong>vs ${r.opp}</strong><span>${r.games}경기·득${r.gf} 실${r.ga}</span></div>
+            <div class="vs-bar"><div class="vw" style="width:${wP}%"></div><div class="vd" style="width:${dP}%"></div><div class="vl" style="width:${lP}%"></div></div>
+            <div class="vs-sub"><span>${r.w}승 ${r.d}무 ${r.l}패</span>
+              <span style="color:${+wr>=50?'var(--green)':'var(--red2)'}">승률 ${wr}%</span></div>
+          </div>`;
+        }).join('')}
+        <hr class="div">
+        <div class="panel-title" style="margin-bottom:10px"><span class="dot" style="background:var(--gold2)"></span>시즌 포인트 TOP${pSort.length}</div>
+        ${barList(pSort.map(p=>({name:p.name,val:p.points})),'var(--gold2)')}
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="dot" style="background:var(--red)"></span>상대팀별 다득점 TOP5</div>
+        ${Object.entries(d.topScorers).map(([opp,list])=>list.length?`<div class="top5-head">vs ${opp}</div>
+          ${list.map(s=>`<div class="top5-row"><span>${s.name}</span><span style="color:var(--green);font-weight:700">${s.goals} ⚽</span></div>`).join('')}`:''
+        ).join('')}
+        ${d.chem.length?`<hr class="div">
+        <div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:#E24B4A"></span>득점 TOP5 케미</div>
+        <div class="chem-row" style="font-size:11px;color:var(--muted)"><span class="chem-s">득점자</span><span class="chem-a">어시스트</span><span class="chem-p">지분</span></div>
+        ${d.chem.slice(0,12).map(c=>`<div class="chem-row"><span class="chem-s">${c.scorer}</span><span class="chem-a">↔ ${c.assist}</span><span class="chem-p">${c.pct}</span></div>`).join('')}`:''}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="dot" style="background:var(--teal)"></span>클린시트 순위</div>
+      ${barList(cSort.map(p=>({name:p.name,val:p.clean})),'var(--teal)')}
+    </div>`;
+
+  setTimeout(()=>{
+    const tc='#5f5e5a',gc='rgba(0,0,0,0.06)';
+    const bOpts={indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.x}}},
+      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11}},beginAtZero:true},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}}};
+    if(gSort.length&&document.getElementById('cg')){
+      charts.g=new Chart(document.getElementById('cg'),{type:'bar',
+        data:{labels:gSort.map(p=>p.name),datasets:[{data:gSort.map(p=>p.goals),
+          backgroundColor:gSort.map((_,i)=>['#3B6D11','#639922','#97C459','#C0DD97','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE'][i]||'#EAF3DE'),borderRadius:4}]},
+        options:JSON.parse(JSON.stringify(bOpts))});}
+    if(aSort.length&&document.getElementById('ca')){
+      charts.a=new Chart(document.getElementById('ca'),{type:'bar',
+        data:{labels:aSort.map(p=>p.name),datasets:[{data:aSort.map(p=>p.assists),
+          backgroundColor:aSort.map((_,i)=>['#085041','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB'][i]||'#9FE1CB'),borderRadius:4}]},
+        options:JSON.parse(JSON.stringify(bOpts))});}
+  },50);
+}
+
+function renderPlayers(){
+  const d=D; if(!d||!d.players.length)return;
+  const pl=[...d.players].sort((a,b)=>b.points-a.points);
+  document.getElementById('pl-content').innerHTML=`
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px">👤 선수 스탯</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">전체 ${pl.length}명 · ${d.round} ${d.date}</div>
+    <div class="panel"><div class="table-wrap"><table>
+      <thead><tr><th>이름</th><th>백넘버</th><th>전체경기</th><th>필드</th><th>키퍼</th>
+        <th>골</th><th>어시</th><th>클린시트</th><th>포인트</th><th>실점</th><th>실점률</th><th>자책골</th></tr></thead>
+      <tbody>${pl.map(p=>`<tr>
+        <td>${p.name}</td>
+        <td><span class="num-pill">${p.num||'—'}</span></td>
+        <td>${p.games}</td><td>${p.field}</td><td>${p.keeper}</td>
+        <td style="color:var(--green);font-weight:700">${p.goals||'—'}</td>
+        <td style="color:var(--teal);font-weight:700">${p.assists||'—'}</td>
+        <td style="color:var(--teal)">${p.clean||'—'}</td>
+        <td style="color:var(--gold);font-weight:700">${p.points||'—'}</td>
+        <td style="color:${p.conceded>0?'var(--red2)':'inherit'}">${p.conceded||'—'}</td>
+        <td>${p.concede_rate||'—'}</td>
+        <td>${p.og||'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div></div>`;
+}
+
+function renderHalf(){
+  const d=D;
+  if(!d||!d.halfStats.length){
+    document.getElementById('hf-content').innerHTML='<div class="loading-state"><p>전후반 데이터를 불러오지 못했습니다.</p></div>';
+    return;
+  }
+  const stats=[...d.halfStats].filter(p=>p.total>0).sort((a,b)=>b.total-a.total);
+  const tf=stats.reduce((s,p)=>s+p.first,0);
+  const ts=stats.reduce((s,p)=>s+p.second,0);
+  const ta=tf+ts;
+  document.getElementById('hf-content').innerHTML=`
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px">⏱ 전후반 공격 포인트 분석</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">${d.round} ${d.date}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;max-width:480px">
+      <div class="s-card"><div class="s-label">전체</div><div class="s-val" style="color:var(--teal)">${ta}</div></div>
+      <div class="s-card"><div class="s-label">🔵 전반</div><div class="s-val" style="color:#185FA5">${tf}<span style="font-size:12px;color:var(--muted);margin-left:4px">${ta?(tf/ta*100).toFixed(0):0}%</span></div></div>
+      <div class="s-card"><div class="s-label">🔴 후반</div><div class="s-val" style="color:#E24B4A">${ts}<span style="font-size:12px;color:var(--muted);margin-left:4px">${ta?(ts/ta*100).toFixed(0):0}%</span></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="dot" style="background:#185FA5"></span>전반<span class="dot" style="background:#E24B4A;margin-left:6px"></span>후반</div>
+      ${stats.map(p=>`<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px">
+          <span>${p.name}</span>
+          <span style="font-size:11px;color:var(--muted);font-weight:400">전반 ${p.first} (${p.firstPct.toFixed(0)}%) · 후반 ${p.second} (${p.secondPct.toFixed(0)}%) · 합 ${p.total}</span>
+        </div>
+        <div class="half-bar-wrap">
+          <div class="half-first" style="width:${p.firstPct.toFixed(0)}%"></div>
+          <div class="half-second" style="width:${p.secondPct.toFixed(0)}%"></div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+loadData();
+</script>
+</body>
+</html>
