@@ -711,12 +711,6 @@ function renderHarbor(){
     </div>`:''}
     <div class="two-col">
       <div class="panel">
-        <div class="panel-title"><span class="dot" style="background:var(--red)"></span>상대팀별 다득점 TOP5</div>
-        ${Object.keys(d.topScorers).length?
-          Object.entries(d.topScorers).map(([opp,list])=>list.length?`<div class="top5-head">vs ${opp}</div>${list.map(s=>`<div class="top5-row"><span>${s.name}</span><span style="color:var(--green);font-weight:700">${s.goals}⚽</span></div>`).join('')}`:''
-          ).join('')
-          :'<div style="color:var(--muted);font-size:12px;padding:8px 0">데이터 없음</div>'}
-        <hr class="div">
         <div class="panel-title" style="margin-bottom:10px">
           <span class="dot" style="background:var(--gold2)"></span>포인트 TOP8
           <div style="margin-left:auto;display:flex;gap:10px;font-size:10px;font-weight:600">
@@ -792,7 +786,7 @@ function renderHarbor(){
           <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px">골 지분 기준</span>
         </div>
         ${(()=>{
-          if(!d.chem.length)return'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">데이터 없음</div>';
+          if(!d.chem.length)return'';
           const sorted=[...d.chem].sort((a,b)=>parseFloat(b.p)-parseFloat(a.p)).slice(0,4);
           const duoColors=['#E91E63','#9C27B0','#3F51B5','#00897B'];
           return sorted.map((c,i)=>`
