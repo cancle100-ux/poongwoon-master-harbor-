@@ -197,18 +197,30 @@ async function loadData(){
   btn.classList.add('loading'); btn.textContent='⏳ 로딩 중...';
   if(timer) clearInterval(timer);
   try{
-  const url=`https://docs.google.com/spreadsheets/d/e/2PACX-1vSUoHR-zf-zWtQzAiT_4_Axq0opg3Pt4pACtmJrgtLWoKEtSDYJEB6Heg4ODg3KDERBbJb7TOAmmP3F/pub?gid=1445436566&single=true&output=csv&t=${Date.now()}`;
-    const res=await fetch(url);
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(), 8000);
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&t=${Date.now()}`;
+    const res=await fetch(url, {signal:controller.signal, mode:'cors'});
+    clearTimeout(timeout);
     if(!res.ok) throw new Error('HTTP '+res.status);
     const text=await res.text();
+    if(!text||text.trim().length<10) throw new Error('빈 데이터');
     D=parseSheetData(parseCSV(text));
     const n=new Date();
     document.getElementById('last-updated').textContent=`실시간 ${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} ✅ (5분 자동갱신)`;
+    // 에러 박스 있으면 제거
+    document.querySelectorAll('.fetch-error').forEach(el=>el.remove());
     renderAll();
     timer=setInterval(loadData,5*60*1000);
   }catch(e){
     if(!D){ D=EMBEDDED; renderAll(); }
-    document.getElementById('last-updated').textContent=`⚠️ 연결 실패`;
+    const msg=e.name==='AbortError'?'요청 시간 초과 (8초)':e.message;
+    document.getElementById('last-updated').textContent=`⚠️ 연결 실패: ${msg}`;
+    document.querySelectorAll('.fetch-error').forEach(el=>el.remove());
+    document.getElementById('db-content').insertAdjacentHTML('afterbegin',
+      `<div class="fetch-error" style="background:#FCEBEB;border:1px solid #f7c1c1;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#A32D2D">
+        ⚠️ 실시간 연결 실패: ${msg}<br><small>내장 데이터(9라운드)로 표시 중</small>
+      </div>`);
     console.warn(e);
   }finally{
     btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
