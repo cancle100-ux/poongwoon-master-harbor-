@@ -269,9 +269,7 @@ function parseCSV(txt){
 
 async function refreshData(){
   const btn=document.getElementById('sync-btn');
-  btn.textContent='⏳';btn.disabled=true;
-  // 즉시 fallback으로 먼저 렌더링
-  if(!HD){HD=hbFallback();renderHarbor();}
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
   try{
     const hRows=await fetchTab(GID_HDASH);
     HD=parseHarbor(hRows);
@@ -283,7 +281,7 @@ async function refreshData(){
   }catch(e){
     document.getElementById('last-upd').textContent='⚠️ 오프라인';
     console.warn(e);
-  }finally{btn.textContent='🔄';btn.disabled=false;}
+  }finally{if(btn){btn.textContent='🔄';btn.disabled=false;}}
 }
 
 // ============== HARBOR PARSE ==============
@@ -814,17 +812,25 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 
 // ============== INIT ==============
 document.getElementById('pw-mdate').value=new Date().toISOString().slice(0,10);
-// Chart.js 로드 후 초기화
+
 function initApp(){
-  if(typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined'){
-    Chart.register(ChartDataLabels);
-  }
-  refreshData();
+  try{if(typeof Chart!=='undefined'&&typeof ChartDataLabels!=='undefined')Chart.register(ChartDataLabels);}catch(e){}
+  // 즉시 fallback 렌더
+  HD=hbFallback();
+  renderHarbor();
   renderPW();
   renderRival();
+  // 백그라운드에서 실시간 fetch
+  refreshData();
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
 }
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" onload="window._chartLoaded=true;if(window._dlLoaded)initApp();" onerror="initApp();"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" onload="window._dlLoaded=true;if(window._chartLoaded)initApp();" onerror="if(window._chartLoaded)initApp();"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 </body>
 </html>
