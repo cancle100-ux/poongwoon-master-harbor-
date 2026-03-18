@@ -241,6 +241,7 @@ tbody tr:hover{background:var(--bg);}
 <script>
 const SHEET_ID='1cM4UhB-nL6smf4OIn_lqQ0on1AtYG2ff_haIXBvXnK0';
 const GID_HDASH='1445436566';
+const GID_HTODAY='970830084';
 const GID_MLOG='827166085';
 let CH={},HD=null,MD=null,RT=null;
 
@@ -290,8 +291,12 @@ async function refreshData(){
   const btn=document.getElementById('sync-btn');
   if(btn){btn.textContent='⏳';btn.disabled=true;}
   try{
-    const hRows=await fetchTab(GID_HDASH);
+    const [hRows, todayRows]=await Promise.all([
+      fetchTab(GID_HDASH),
+      fetchTab(GID_HTODAY).catch(()=>null)
+    ]);
     HD=parseHarbor(hRows);
+    if(todayRows) HD.rounds=parseTodayMatches(todayRows);
     const n=new Date();
     document.getElementById('last-upd').textContent=`${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} ✅`;
     renderHarbor();
@@ -456,6 +461,70 @@ function renderMaster(){
   },50);
 }
 
+// ============== HARBOR TODAY MATCHES PARSE ==============
+// 탭 구조: Row0=날짜/라운드, Today_Game_Result(경기/상대팀/득점/실점), Point_Result(경기/상대/골/어시/실점/자책)
+function parseTodayMatches(rows){
+  let date='', round='';
+  // Row 0: 경기일자 날짜 라운드
+  if(rows[0]){
+    for(let c=0;c<rows[0].length;c++){
+      if(rows[0][c]&&rows[0][c].match(/\d{4}-\d{2}-\d{2}/))date=rows[0][c];
+      if(rows[0][c]&&rows[0][c].includes('라운드'))round=rows[0][c];
+    }
+  }
+  if(!date&&!round)return null;
+
+  // Today_Game_Result 섹션 찾기: '경기' 헤더 행
+  let gameHRow=-1, gameCol=-1;
+  for(let i=0;i<rows.length;i++){
+    for(let c=0;c<rows[i].length;c++){
+      if(rows[i][c]==='경기'&&rows[i][c+1]==='상대팀'){gameHRow=i;gameCol=c;break;}
+    }
+    if(gameHRow>=0)break;
+  }
+
+  // Point_Result 섹션 찾기
+  let ptHRow=-1, ptCol=-1;
+  for(let i=0;i<rows.length;i++){
+    for(let c=0;c<rows[i].length;c++){
+      if(rows[i][c]==='경기'&&rows[i][c+1]==='상대'&&rows[i][c+2]==='골'){ptHRow=i;ptCol=c;break;}
+    }
+    if(ptHRow>=0)break;
+  }
+
+  // 경기 스코어 파싱
+  const matchMap={};
+  if(gameHRow>=0){
+    for(let i=gameHRow+1;i<rows.length;i++){
+      const r=rows[i];
+      const num=r[gameCol], opp=r[gameCol+1], gf=r[gameCol+2], ga=r[gameCol+3];
+      if(!num||isNaN(+num))continue;
+      const n=+num;
+      if(!matchMap[n])matchMap[n]={num:n,opp:opp||'—',gf:+gf||0,ga:+ga||0,scorers:[],assists:[]};
+      else if(opp&&opp!==matchMap[n].opp)matchMap[n].opp=opp;
+    }
+  }
+
+  // 득점자/어시 파싱
+  if(ptHRow>=0){
+    for(let i=ptHRow+1;i<rows.length;i++){
+      const r=rows[i];
+      const num=r[ptCol], opp=r[ptCol+1], scorer=r[ptCol+2], assist=r[ptCol+3], conceded=r[ptCol+4], og=r[ptCol+5];
+      if(!num||isNaN(+num))continue;
+      const n=+num;
+      if(!matchMap[n])matchMap[n]={num:n,opp:opp||'—',gf:0,ga:0,scorers:[],assists:[]};
+      if(scorer)matchMap[n].scorers.push({name:scorer});
+      if(assist)matchMap[n].assists.push({name:assist});
+      if(og)matchMap[n].scorers.push({name:og,og:true});
+    }
+  }
+
+  const matches=Object.values(matchMap).sort((a,b)=>a.num-b.num);
+  if(!matches.length)return null;
+
+  return [{round:round||'최근 경기',date:date||'',matches}];
+}
+
 // ============== HARBOR PARSE ==============
 const HB_ROUNDS=[
   {round:'9라운드',date:'2026-03-17',matches:[
@@ -595,7 +664,7 @@ function renderHarbor(){
   const tCS=d.players.reduce((s,p)=>s+p.clean,0);
   const gS=[...d.players].sort((a,b)=>b.goals-a.goals).filter(p=>p.goals>0).slice(0,8);
   const aS=[...d.players].sort((a,b)=>b.assists-a.assists).filter(p=>p.assists>0).slice(0,8);
-  const pS=[...d.players].sort((a,b)=>b.points-a.points).filter(p=>p.points>0).slice(0,6);
+  const pS=[...d.players].sort((a,b)=>b.points-a.points).filter(p=>p.points>0).slice(0,8);
   const cS=[...d.players].sort((a,b)=>b.clean-a.clean).filter(p=>p.clean>0).slice(0,6);
   const eS=[...d.players].filter(p=>p.games>=5).map(p=>({...p,eff:(p.goals+p.assists)/p.games})).sort((a,b)=>b.eff-a.eff).slice(0,8);
   const EC=['#BA7517','#EF9F27','#FAC775','#e8c870','#d4b45a','#c0a045','#ac8c30','#988020'];
@@ -643,11 +712,42 @@ function renderHarbor(){
     <div class="two-col">
       <div class="panel">
         <div class="panel-title"><span class="dot" style="background:var(--red)"></span>상대팀별 다득점 TOP5</div>
-        ${Object.entries(d.topScorers).map(([opp,list])=>list.length?`<div class="top5-head">vs ${opp}</div>${list.map(s=>`<div class="top5-row"><span>${s.name}</span><span style="color:var(--green);font-weight:700">${s.goals}⚽</span></div>`).join('')}`:''
-        ).join('')}
+        ${Object.keys(d.topScorers).length?
+          Object.entries(d.topScorers).map(([opp,list])=>list.length?`<div class="top5-head">vs ${opp}</div>${list.map(s=>`<div class="top5-row"><span>${s.name}</span><span style="color:var(--green);font-weight:700">${s.goals}⚽</span></div>`).join('')}`:''
+          ).join('')
+          :'<div style="color:var(--muted);font-size:12px;padding:8px 0">데이터 없음</div>'}
         <hr class="div">
-        <div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:var(--gold2)"></span>포인트 TOP6</div>
-        ${bList(pS.map(p=>({n:p.name,v:p.points})),'var(--gold2)')}
+        <div class="panel-title" style="margin-bottom:10px">
+          <span class="dot" style="background:var(--gold2)"></span>포인트 TOP8
+          <div style="margin-left:auto;display:flex;gap:10px;font-size:10px;font-weight:600">
+            <span style="color:var(--green)">⚽골</span>
+            <span style="color:var(--teal)">🎯어시</span>
+            <span style="color:#5b9bd5">🧤CS</span>
+          </div>
+        </div>
+        ${pS.map(p=>{
+          const total=p.points||1;
+          const gW=Math.round(p.goals/total*100);
+          const aW=Math.round(p.assists/total*100);
+          const cW=Math.max(0,100-gW-aW);
+          return`<div class="rank-row" style="margin-bottom:8px">
+            <span class="rk-num">${pS.indexOf(p)+1}</span>
+            <span class="rk-name">${p.name}</span>
+            <div class="rk-bar-wrap" style="height:10px">
+              <div style="height:100%;display:flex;border-radius:4px;overflow:hidden">
+                <div style="width:${gW}%;background:var(--green2)"></div>
+                <div style="width:${aW}%;background:var(--teal)"></div>
+                <div style="width:${cW}%;background:#5b9bd5"></div>
+              </div>
+            </div>
+            <span class="rk-val" style="color:var(--gold2)">${p.points}</span>
+          </div>
+          <div style="display:flex;gap:8px;font-size:10px;color:var(--muted);padding:0 0 6px 22px">
+            <span style="color:var(--green)">골 ${p.goals}</span>
+            <span style="color:var(--teal)">어시 ${p.assists}</span>
+            <span style="color:#5b9bd5">CS ${p.clean}</span>
+          </div>`;
+        }).join('')}
       </div>
       <div class="panel">
         ${d.chem.length?`<div class="panel-title" style="margin-bottom:8px"><span class="dot" style="background:#E24B4A"></span>득점 케미</div>
@@ -658,6 +758,86 @@ function renderHarbor(){
         ${bList(cS.map(p=>({n:p.name,v:p.clean})),'var(--teal)')}
       </div>
     </div>
+
+    <!-- 🔥 핫 플레이어 / 🤝 최고 케미 듀오 / 🧤 철벽 키퍼 -->
+    <div class="three-col" style="margin-bottom:16px">
+
+      <!-- 핫 플레이어: 경기수 대비 공격포인트 top3 (최소 5경기, 뱃지형) -->
+      <div class="panel">
+        <div class="panel-title"><span style="font-size:14px">🔥</span> 핫 플레이어
+          <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px">경기당 pts 기준</span>
+        </div>
+        ${(()=>{
+          const hot=[...d.players].filter(p=>p.field>=5).map(p=>({...p,rate:(p.goals+p.assists)/p.field})).sort((a,b)=>b.rate-a.rate).slice(0,3);
+          const medals=['🥇','🥈','🥉'];
+          const flames=['🔥🔥🔥','🔥🔥','🔥'];
+          return hot.map((p,i)=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:${i===0?'linear-gradient(135deg,#FFF8E1,#fff)':i===1?'linear-gradient(135deg,#F3F3F3,#fff)':'linear-gradient(135deg,#FBE9E7,#fff)'};border-radius:10px;margin-bottom:8px;border:1px solid ${i===0?'#F9A825':i===1?'#BDBDBD':'#BF360C'}20">
+              <div style="font-size:24px">${medals[i]}</div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:700">${p.name} <span style="font-size:11px">${flames[i]}</span></div>
+                <div style="font-size:10px;color:var(--muted)">${p.goals}골 ${p.assists}어시 / ${p.field}경기</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:18px;font-weight:700;color:${i===0?'#F57F17':i===1?'#616161':'#BF360C'}">${p.rate.toFixed(2)}</div>
+                <div style="font-size:9px;color:var(--muted)">pts/game</div>
+              </div>
+            </div>`).join('');
+        })()}
+      </div>
+
+      <!-- 최고 케미 듀오: chem 데이터에서 지분% 높은 순 -->
+      <div class="panel">
+        <div class="panel-title"><span style="font-size:14px">🤝</span> 최고 케미 듀오
+          <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px">골 지분 기준</span>
+        </div>
+        ${(()=>{
+          if(!d.chem.length)return'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">데이터 없음</div>';
+          const sorted=[...d.chem].sort((a,b)=>parseFloat(b.p)-parseFloat(a.p)).slice(0,4);
+          const duoColors=['#E91E63','#9C27B0','#3F51B5','#00897B'];
+          return sorted.map((c,i)=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--bg);margin-bottom:6px">
+              <div style="width:32px;height:32px;border-radius:50%;background:${duoColors[i]};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">💫</div>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:700">${c.s} <span style="color:var(--muted);font-weight:400">→</span> ${c.a.replace('↔ ','')}</div>
+                <div style="height:5px;background:#eee;border-radius:3px;margin-top:4px;overflow:hidden">
+                  <div style="height:100%;width:${c.p};background:${duoColors[i]};border-radius:3px"></div>
+                </div>
+              </div>
+              <div style="font-size:14px;font-weight:700;color:${duoColors[i]}">${c.p}</div>
+            </div>`).join('');
+        })()}
+      </div>
+
+      <!-- 철벽 키퍼 지수: 실점허용률 낮은 키퍼 순위 -->
+      <div class="panel">
+        <div class="panel-title"><span style="font-size:14px">🧤</span> 철벽 키퍼 지수
+          <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px">경기당 실점</span>
+        </div>
+        ${(()=>{
+          const keepers=[...d.players].filter(p=>p.keeper>=3).sort((a,b)=>+a.cr- +b.cr);
+          if(!keepers.length)return'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">키퍼 데이터 없음</div>';
+          const maxCR=Math.max(...keepers.map(k=>+k.cr||0),1);
+          return keepers.map((k,i)=>{
+            const cr=+k.cr||0;
+            const shield=cr===0?'🛡️🛡️🛡️':cr<0.5?'🛡️🛡️':cr<1?'🛡️':'';
+            const barW=cr===0?100:Math.max(5,Math.round((1-cr/maxCR)*100));
+            const barC=cr===0?'var(--green)':cr<0.5?'var(--teal)':cr<1?'var(--gold)':'var(--red)';
+            return`<div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <div style="font-size:12px;font-weight:700">${i===0?'👑 ':''} ${k.name} ${shield}</div>
+                <div style="font-size:13px;font-weight:700;color:${barC}">${cr===0?'무실점':cr.toFixed(2)}</div>
+              </div>
+              <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:${barW}%;background:${barC};border-radius:4px;transition:width .3s"></div>
+              </div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">${k.keeper}경기 · 총 실점 ${k.conceded} · CS ${k.clean}</div>
+            </div>`;
+          }).join('');
+        })()}
+      </div>
+    </div>
+
     <div class="panel"><div class="panel-title"><span class="dot" style="background:var(--muted)"></span>선수 전체 스탯 · ${d.round} ${d.date}</div>
       <div class="table-wrap"><table><thead><tr><th>이름</th><th>번호</th><th>경기</th><th>골</th><th>어시</th><th>CS</th><th>포인트</th><th>실점</th><th>실점률</th></tr></thead>
       <tbody>${[...d.players].sort((a,b)=>b.points-a.points).map(p=>`<tr><td>${p.name}</td>
