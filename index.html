@@ -288,41 +288,6 @@ async function refreshData(){
   }finally{btn.textContent='🔄';btn.disabled=false;}
 }
 
-// ============== MASTER PARSE ==============
-function parseMaster(rows){
-  const d={teams:{},players:{},matches:[],recent:[]};
-  const mr=rows.filter(r=>r[9]==='마스터FC'&&r[0]&&r[1]);
-  const gmap={};
-  for(const r of mr){
-    const date=r[0],gid=r[1],myT=r[2],oppT=r[3],scorer=r[4],assist=r[5],og=r[6];
-    if(!myT||!oppT)continue;
-    const key=`${date}__${gid}__${[myT,oppT].sort().join('__')}`;
-    if(!gmap[key])gmap[key]={date,gid,teams:[myT,oppT].sort(),goals:{[myT]:0,[oppT]:0}};
-    if(scorer&&!og)gmap[key].goals[myT]=(gmap[key].goals[myT]||0)+1;
-    if(og)gmap[key].goals[oppT]=(gmap[key].goals[oppT]||0)+1;
-  }
-  for(const g of Object.values(gmap)){
-    const[t1,t2]=g.teams;const g1=g.goals[t1]||0,g2=g.goals[t2]||0;
-    for(const team of[t1,t2]){
-      if(!d.teams[team])d.teams[team]={name:team,g:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
-      const myG=(team===t1)?g1:g2,oppG=(team===t1)?g2:g1;
-      d.teams[team].g++;d.teams[team].gf+=myG;d.teams[team].ga+=oppG;
-      if(myG>oppG){d.teams[team].w++;d.teams[team].pts+=3;}
-      else if(myG===oppG){d.teams[team].d++;d.teams[team].pts++;}
-      else d.teams[team].l++;
-    }
-    d.matches.push({...g,score:{[t1]:g1,[t2]:g2}});
-  }
-  for(const r of mr){
-    const sc=r[4],as=r[5],og=r[6];
-    if(sc&&!og){if(!d.players[sc])d.players[sc]={name:sc,g:0,a:0,og:0,pts:0};d.players[sc].g++;d.players[sc].pts++;}
-    if(as){if(!d.players[as])d.players[as]={name:as,g:0,a:0,og:0,pts:0};d.players[as].a++;d.players[as].pts++;}
-    if(og){if(!d.players[og])d.players[og]={name:og,g:0,a:0,og:0,pts:0};d.players[og].og++;}
-  }
-  d.recent=d.matches.sort((a,b)=>b.date.localeCompare(a.date)||b.gid.localeCompare(a.gid)).slice(0,10);
-  return d;
-}
-
 // ============== HARBOR PARSE ==============
 const HB_ROUNDS=[
   {round:'9라운드',date:'2026-03-17',matches:[
@@ -483,82 +448,6 @@ function hbMatchSection(d){
   </div>`;
 }
 }
-// ============== RENDER MASTER ==============
-function renderMaster(){
-  const d=MD;dch(['mc-g','mc-a','mc-p']);
-  if(!d){document.getElementById('master-content').innerHTML='<div class="loading-state"><div class="spin">⚽</div></div>';return;}
-  const teams=Object.values(d.teams).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga));
-  const players=Object.values(d.players);
-  const gSort=players.filter(p=>p.g>0).sort((a,b)=>b.g-a.g).slice(0,10);
-  const aSort=players.filter(p=>p.a>0).sort((a,b)=>b.a-a.a).slice(0,8);
-  const pSort=players.filter(p=>p.pts>0).sort((a,b)=>b.pts-a.pts).slice(0,8);
-  const tGoals=players.reduce((s,p)=>s+p.g,0);
-  const rb=(i)=>{if(i===0)return'<span class="rb g">1</span>';if(i===1)return'<span class="rb s">2</span>';if(i===2)return'<span class="rb b">3</span>';return`<span class="rb">${i+1}</span>`;};
-  document.getElementById('master-content').innerHTML=`
-    ${d.matches.length===0?`<div class="err-box">⚠️ 마스터FC 데이터 없음 — 구글 시트에 데이터가 입력되면 자동으로 표시됩니다</div>`:''}
-    <div class="stat-row s4">
-      <div class="s-card"><div class="s-label">총 경기</div><div class="s-val">${d.matches.length}</div></div>
-      <div class="s-card"><div class="s-label">총 득점</div><div class="s-val" style="color:var(--green)">${tGoals}</div></div>
-      <div class="s-card"><div class="s-label">등록 선수</div><div class="s-val" style="color:var(--blue)">${players.length}명</div></div>
-      <div class="s-card"><div class="s-label">참여 팀</div><div class="s-val" style="color:var(--gold)">${teams.length}팀</div></div>
-    </div>
-    ${teams.length?`<div class="panel mb16">
-      <div class="panel-title"><span class="dot" style="background:var(--blue)"></span>내부 리그 팀 순위</div>
-      <div class="stand-row hdr"><div></div><div>팀명</div><div style="text-align:center">G</div><div style="text-align:center">W</div><div style="text-align:center">D</div><div style="text-align:center">L</div><div style="text-align:center">GD</div><div style="text-align:center">PTS</div></div>
-      ${teams.map((t,i)=>`<div class="stand-row">
-        ${rb(i)}<div style="font-weight:700">${t.name.replace('team','팀')}</div>
-        <div style="text-align:center;color:var(--muted)">${t.g}</div>
-        <div style="text-align:center;color:var(--green);font-weight:700">${t.w}</div>
-        <div style="text-align:center;color:var(--muted)">${t.d}</div>
-        <div style="text-align:center;color:var(--red)">${t.l}</div>
-        <div style="text-align:center;color:${t.gf-t.ga>=0?'var(--green)':'var(--red)'};font-weight:700">${t.gf-t.ga>=0?'+':''}${t.gf-t.ga}</div>
-        <div style="text-align:center;font-size:15px;font-weight:700;color:var(--blue2)">${t.pts}</div>
-      </div>`).join('')}
-    </div>`:''}
-    ${d.recent.length?`<div class="panel mb16">
-      <div class="panel-title"><span class="dot" style="background:#185FA5"></span>최근 경기</div>
-      <div class="match-cards">${d.recent.slice(0,8).map(m=>{
-        const[t1,t2]=m.teams,g1=m.goals[t1]||0,g2=m.goals[t2]||0;
-        const sc=g1===g2?'var(--muted)':g1>g2?'var(--green)':'var(--red)';
-        return`<div class="mc-sm"><div style="font-size:9px;color:var(--muted)">${m.date.slice(5)}</div>
-          <div style="font-size:10px;font-weight:700">${t1.replace('team','팀')}</div>
-          <div style="font-size:17px;font-weight:700;color:${sc}">${g1}–${g2}</div>
-          <div style="font-size:10px;color:var(--muted)">${t2.replace('team','팀')}</div></div>`;
-      }).join('')}</div>
-    </div>`:''}
-    ${gSort.length||aSort.length?`<div class="two-col">
-      ${gSort.length?`<div class="panel"><div class="panel-title"><span class="dot" style="background:var(--green2)"></span>득점 순위</div>
-        <div style="position:relative;width:100%;height:${gSort.length*34+20}px"><canvas id="mc-g"></canvas></div></div>`:''}
-      ${aSort.length?`<div class="panel"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>어시스트 순위</div>
-        <div style="position:relative;width:100%;height:${aSort.length*34+20}px"><canvas id="mc-a"></canvas></div></div>`:''}
-    </div>`:''}
-    ${pSort.length?`<div class="panel mb16">
-      <div class="panel-title"><span class="dot" style="background:var(--gold)"></span>공격 포인트 순위 (골+어시)</div>
-      ${pSort.map((p,i)=>{const c=['#1565C0','#1976D2','#1E88E5','#2196F3','#42A5F5','#64B5F6','#90CAF9','#BBDEFB'][i]||'#BBDEFB';
-        return`<div class="rank-row"><span class="rk-num">${i+1}</span><span class="rk-name">${p.name}</span>
-          <span class="rk-detail">${p.g}골 ${p.a}어시</span>
-          <div class="rk-bar-wrap"><div class="rk-bar" style="width:${Math.round(p.pts/pSort[0].pts*100)}%;background:${c}"></div></div>
-          <span class="rk-val" style="color:var(--blue2)">${p.pts}</span></div>`;}).join('')}
-    </div>`:''}
-    ${players.length?`<div class="panel"><div class="panel-title"><span class="dot" style="background:var(--muted)"></span>전체 선수 스탯</div>
-      <div class="table-wrap"><table><thead><tr><th>이름</th><th>골</th><th>어시</th><th>포인트</th><th>자책골</th></tr></thead>
-      <tbody>${players.sort((a,b)=>b.pts-a.pts).slice(0,30).map(p=>`<tr><td>${p.name}</td>
-        <td style="color:var(--green);font-weight:700">${p.g||'—'}</td>
-        <td style="color:var(--teal);font-weight:700">${p.a||'—'}</td>
-        <td style="color:var(--gold);font-weight:700">${p.pts||'—'}</td>
-        <td style="color:${p.og>0?'var(--red)':'var(--muted)'}">${p.og||'—'}</td></tr>`).join('')}
-      </tbody></table></div></div>`:''}
-  `;
-  setTimeout(()=>{
-    const tc='#5f5e5a',gc='rgba(0,0,0,0.06)';
-    const bO={indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},datalabels:{anchor:'end',align:'end',color:'#5f5e5a',font:{size:11,weight:'600'},formatter:v=>v},tooltip:{callbacks:{label:c=>' '+c.parsed.x}}},
-      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11}},beginAtZero:true},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}},layout:{padding:{right:30}}};
-    if(gSort.length&&document.getElementById('mc-g'))CH['mc-g']=new Chart(document.getElementById('mc-g'),{type:'bar',data:{labels:gSort.map(p=>p.name),datasets:[{data:gSort.map(p=>p.g),backgroundColor:gSort.map((_,i)=>['#3B6D11','#639922','#97C459','#C0DD97','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE','#EAF3DE'][i]||'#EAF3DE'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
-    if(aSort.length&&document.getElementById('mc-a'))CH['mc-a']=new Chart(document.getElementById('mc-a'),{type:'bar',data:{labels:aSort.map(p=>p.name),datasets:[{data:aSort.map(p=>p.a),backgroundColor:aSort.map((_,i)=>['#085041','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB'][i]||'#9FE1CB'),borderRadius:4}]},options:JSON.parse(JSON.stringify(bO))});
-  },50);
-}
-
 // ============== RENDER HARBOR ==============
 function renderHarbor(){
   const d=HD;dch(['hb-g','hb-a']);
