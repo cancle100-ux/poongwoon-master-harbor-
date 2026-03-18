@@ -96,6 +96,94 @@ const SHEET_ID='1cM4UhB-nL6smf4OIn_lqQ0on1AtYG2ff_haIXBvXnK0';
 const GID='1445436566';
 let charts={}, D=null, timer=null;
 
+// ===== 구글 시트에서 직접 읽어온 내장 데이터 (로컬 오프라인용) =====
+const EMBEDDED = {
+  date:'2026-03-17', round:'9라운드',
+  players:[
+    {year:'92',num:'9',name:'주건호',games:32,field:32,keeper:0,goals:17,assists:11,clean:1,points:29,conceded:0,concede_rate:'0.00',og:0},
+    {year:'89',num:'8',name:'박동휘',games:22,field:21,keeper:1,goals:14,assists:7,clean:1,points:22,conceded:2,concede_rate:'2.00',og:0},
+    {year:'85',num:'71',name:'김준식',games:22,field:22,keeper:0,goals:9,assists:4,clean:0,points:13,conceded:0,concede_rate:'0.00',og:0},
+    {year:'89',num:'18',name:'김형욱',games:33,field:33,keeper:0,goals:7,assists:8,clean:5,points:20,conceded:0,concede_rate:'0.00',og:0},
+    {year:'90',num:'66',name:'강지선',games:33,field:33,keeper:0,goals:5,assists:10,clean:6,points:21,conceded:0,concede_rate:'0.00',og:0},
+    {year:'91빠',num:'20',name:'이기세',games:25,field:25,keeper:0,goals:5,assists:2,clean:0,points:7,conceded:0,concede_rate:'0.00',og:0},
+    {year:'80빠',num:'98',name:'조재상',games:21,field:19,keeper:2,goals:5,assists:2,clean:0,points:7,conceded:4,concede_rate:'2.00',og:0},
+    {year:'92',num:'17',name:'장치광',games:23,field:23,keeper:0,goals:4,assists:1,clean:2,points:7,conceded:0,concede_rate:'0.00',og:0},
+    {year:'01',num:'',name:'최진서',games:14,field:14,keeper:0,goals:3,assists:4,clean:2,points:9,conceded:0,concede_rate:'0.00',og:0},
+    {year:'98',num:'72',name:'김남준',games:19,field:19,keeper:0,goals:3,assists:1,clean:3,points:7,conceded:0,concede_rate:'0.00',og:0},
+    {year:'92',num:'1',name:'선효림',games:22,field:17,keeper:5,goals:3,assists:1,clean:2,points:6,conceded:7,concede_rate:'1.40',og:0},
+    {year:'',num:'',name:'정경훈',games:3,field:3,keeper:0,goals:3,assists:0,clean:0,points:3,conceded:0,concede_rate:'0.00',og:0},
+    {year:'90',num:'12',name:'장주성',games:34,field:34,keeper:0,goals:2,assists:1,clean:11,points:14,conceded:0,concede_rate:'0.00',og:0},
+    {year:'83',num:'55',name:'김의선',games:20,field:20,keeper:0,goals:2,assists:0,clean:7,points:9,conceded:0,concede_rate:'0.00',og:0},
+    {year:'89',num:'19',name:'김래상',games:10,field:10,keeper:0,goals:2,assists:0,clean:2,points:4,conceded:0,concede_rate:'0.00',og:0},
+    {year:'86',num:'21',name:'박성언',games:6,field:6,keeper:0,goals:1,assists:4,clean:0,points:5,conceded:0,concede_rate:'0.00',og:0},
+    {year:'79',num:'11',name:'양병선',games:9,field:9,keeper:0,goals:1,assists:4,clean:0,points:5,conceded:0,concede_rate:'0.00',og:0},
+    {year:'',num:'',name:'장지온',games:3,field:3,keeper:0,goals:1,assists:3,clean:0,points:4,conceded:0,concede_rate:'0.00',og:0},
+    {year:'88',num:'20',name:'양순원',games:12,field:12,keeper:0,goals:1,assists:2,clean:6,points:9,conceded:0,concede_rate:'0.00',og:0},
+    {year:'04',num:'',name:'김강현',games:10,field:1,keeper:9,goals:1,assists:0,clean:7,points:8,conceded:2,concede_rate:'0.22',og:0},
+    {year:'96',num:'99',name:'조민세',games:3,field:3,keeper:0,goals:1,assists:0,clean:0,points:1,conceded:0,concede_rate:'0.00',og:0},
+    {year:'81',num:'3',name:'신관수',games:27,field:26,keeper:1,goals:0,assists:3,clean:13,points:16,conceded:2,concede_rate:'2.00',og:0},
+    {year:'92',num:'10',name:'박수범',games:14,field:14,keeper:0,goals:0,assists:3,clean:2,points:5,conceded:0,concede_rate:'0.00',og:0},
+    {year:'92',num:'7',name:'유재영',games:3,field:3,keeper:0,goals:0,assists:3,clean:0,points:3,conceded:0,concede_rate:'0.00',og:0},
+    {year:'',num:'',name:'정동근',games:3,field:3,keeper:0,goals:0,assists:3,clean:0,points:3,conceded:0,concede_rate:'0.00',og:0},
+    {year:'05',num:'31',name:'임기민',games:32,field:2,keeper:30,goals:0,assists:1,clean:14,points:15,conceded:21,concede_rate:'0.70',og:0},
+    {year:'79',num:'4',name:'김성환',games:24,field:24,keeper:0,goals:0,assists:0,clean:11,points:11,conceded:0,concede_rate:'0.00',og:0},
+    {year:'93',num:'19',name:'황세원',games:20,field:20,keeper:0,goals:0,assists:0,clean:10,points:10,conceded:0,concede_rate:'0.00',og:0},
+    {year:'79',num:'88',name:'김장수',games:10,field:10,keeper:0,goals:0,assists:0,clean:7,points:7,conceded:0,concede_rate:'0.00',og:0},
+    {year:'83',num:'83',name:'차진옥',games:16,field:16,keeper:0,goals:0,assists:0,clean:5,points:5,conceded:0,concede_rate:'0.00',og:0},
+    {year:'97',num:'33',name:'김진수',games:13,field:12,keeper:1,goals:0,assists:0,clean:5,points:5,conceded:2,concede_rate:'2.00',og:0},
+    {year:'88',num:'5',name:'이무영',games:11,field:11,keeper:0,goals:0,assists:0,clean:4,points:4,conceded:0,concede_rate:'0.00',og:0},
+    {year:'99',num:'50',name:'원종민',games:11,field:11,keeper:0,goals:0,assists:0,clean:3,points:3,conceded:0,concede_rate:'0.00',og:0},
+  ],
+  vsRecord:[
+    {opp:'아이콘',games:18,w:3,d:9,l:6,gf:16,ga:20},
+    {opp:'터틀파크',games:18,w:13,d:3,l:2,gf:35,ga:11},
+    {opp:'한울',games:17,w:12,d:4,l:1,gf:37,ga:9},
+  ],
+  topScorers:{
+    '한울':[{name:'주건호',goals:8},{name:'강지선',goals:3},{name:'김준식',goals:3},{name:'김형욱',goals:3},{name:'박동휘',goals:3}],
+    '터틀파크':[{name:'박동휘',goals:8},{name:'주건호',goals:5},{name:'이기세',goals:3},{name:'정경훈',goals:3},{name:'강지선',goals:2}],
+    '아이콘':[{name:'김준식',goals:4},{name:'주건호',goals:3},{name:'김형욱',goals:2},{name:'박동휘',goals:2},{name:'조재상',goals:2}],
+  },
+  chem:[
+    {scorer:'주건호',assist:'유재영',pct:'11.8%'},
+    {scorer:'주건호',assist:'신관수',pct:'11.8%'},
+    {scorer:'주건호',assist:'김형욱',pct:'11.8%'},
+    {scorer:'박동휘',assist:'(단독)',pct:'28.6%'},
+    {scorer:'박동휘',assist:'주건호',pct:'21.4%'},
+    {scorer:'박동휘',assist:'강지선',pct:'14.3%'},
+    {scorer:'김준식',assist:'박성언',pct:'33.3%'},
+    {scorer:'김준식',assist:'강지선',pct:'22.2%'},
+    {scorer:'김형욱',assist:'주건호',pct:'57.1%'},
+    {scorer:'강지선',assist:'조재상',pct:'20.0%'},
+    {scorer:'강지선',assist:'장지온',pct:'20.0%'},
+    {scorer:'강지선',assist:'박수범',pct:'20.0%'},
+  ],
+  halfStats:[
+    {name:'주건호',first:13,second:14,total:27,firstPct:48.1,secondPct:51.9},
+    {name:'박동휘',first:11,second:9,total:20,firstPct:55.0,secondPct:45.0},
+    {name:'김형욱',first:7,second:8,total:15,firstPct:46.7,secondPct:53.3},
+    {name:'강지선',first:5,second:10,total:15,firstPct:33.3,secondPct:66.7},
+    {name:'김준식',first:0,second:13,total:13,firstPct:0,secondPct:100},
+    {name:'조재상',first:6,second:1,total:7,firstPct:85.7,secondPct:14.3},
+    {name:'최진서',first:2,second:5,total:7,firstPct:28.6,secondPct:71.4},
+    {name:'이기세',first:2,second:4,total:6,firstPct:33.3,secondPct:66.7},
+    {name:'장치광',first:2,second:2,total:4,firstPct:50.0,secondPct:50.0},
+    {name:'선효림',first:1,second:3,total:4,firstPct:25.0,secondPct:75.0},
+    {name:'장지온',first:4,second:0,total:4,firstPct:100,secondPct:0},
+    {name:'박성언',first:0,second:5,total:5,firstPct:0,secondPct:100},
+    {name:'양병선',first:2,second:3,total:5,firstPct:40.0,secondPct:60.0},
+    {name:'박수범',first:2,second:1,total:3,firstPct:66.7,secondPct:33.3},
+    {name:'유재영',first:2,second:1,total:3,firstPct:66.7,secondPct:33.3},
+    {name:'정동근',first:0,second:3,total:3,firstPct:0,secondPct:100},
+    {name:'정경훈',first:2,second:1,total:3,firstPct:66.7,secondPct:33.3},
+    {name:'양순원',first:1,second:2,total:3,firstPct:33.3,secondPct:66.7},
+    {name:'김남준',first:3,second:1,total:4,firstPct:75.0,secondPct:25.0},
+    {name:'신관수',first:0,second:2,total:2,firstPct:0,secondPct:100},
+    {name:'김의선',first:0,second:2,total:2,firstPct:0,secondPct:100},
+    {name:'김래상',first:1,second:1,total:2,firstPct:50.0,secondPct:50.0},
+  ]
+};
+
 function switchTab(name,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -104,71 +192,30 @@ function switchTab(name,el){
   if(D) renderAll();
 }
 
-// JSONP 방식 - 로컬 file:// 에서도 CORS 없이 작동
-function loadData(){
+async function loadData(){
   const btn=document.getElementById('sync-btn');
   btn.classList.add('loading'); btn.textContent='⏳ 로딩 중...';
   if(timer) clearInterval(timer);
-
-  // 기존 스크립트 태그 제거
-  const old=document.getElementById('gviz-script');
-  if(old) old.remove();
-
-  // JSONP 콜백 전역 함수
-  window._gvizCallback=function(resp){
-    try{
-      const table=resp.table;
-      const cols=table.cols.length;
-      const rows=table.rows.map(r=>
-        Array.from({length:cols},(_,i)=>{
-          const c=r.c&&r.c[i];
-          if(!c||c.v===null||c.v===undefined) return '';
-          return String(c.f!==undefined&&c.f!==null ? c.f : c.v);
-        })
-      );
-      D=parse(rows);
-      const n=new Date();
-      document.getElementById('last-updated').textContent=
-        `업데이트 ${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} (5분 자동갱신)`;
-      renderAll();
-      timer=setInterval(loadData, 5*60*1000);
-    }catch(e){
-      console.error(e);
-      showError(e.message);
-    }finally{
-      btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
-    }
-  };
-
-  // 오류 타임아웃 (10초)
-  const timeout=setTimeout(()=>{
+  try{
+  const url=`https://docs.google.com/spreadsheets/d/e/2PACX-1vSUoHR-zf-zWtQzAiT_4_Axq0opg3Pt4pACtmJrgtLWoKEtSDYJEB6Heg4ODg3KDERBbJb7TOAmmP3F/pub?gid=1445436566&single=true&output=csv&t=${Date.now()}`;
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    D=parseSheetData(parseCSV(text));
+    const n=new Date();
+    document.getElementById('last-updated').textContent=`실시간 ${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} ✅ (5분 자동갱신)`;
+    renderAll();
+    timer=setInterval(loadData,5*60*1000);
+  }catch(e){
+    if(!D){ D=EMBEDDED; renderAll(); }
+    document.getElementById('last-updated').textContent=`⚠️ 연결 실패`;
+    console.warn(e);
+  }finally{
     btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
-    showError('요청 시간 초과 — 네트워크 확인 또는 구글 시트 공유 설정을 확인해주세요.');
-  }, 10000);
-  window._gvizCallback._timeout=timeout;
-
-  const orig=window._gvizCallback;
-  window._gvizCallback=function(resp){
-    clearTimeout(timeout);
-    orig(resp);
-  };
-
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=reqId:1&callback=_gvizCallback&gid=${GID}&t=${Date.now()}`;
-  const s=document.createElement('script');
-  s.id='gviz-script'; s.src=url;
-  s.onerror=()=>{
-    clearTimeout(timeout);
-    btn.classList.remove('loading'); btn.textContent='🔄 새로고침';
-    showError('스크립트 로드 실패 — 구글 시트 공유 설정을 확인해주세요.');
-  };
-  document.head.appendChild(s);
+  }
 }
 
-function showError(msg){
-  ['db-content','pl-content','hf-content'].forEach(id=>{
-    document.getElementById(id).innerHTML=`<div class="error-box">⚠️ 데이터 불러오기 실패: ${msg}<br><small style="margin-top:8px;display:block">구글 시트 → 공유 → "링크가 있는 모든 사용자(뷰어)"로 설정해주세요.</small></div>`;
-  });
-}
+function showError(msg){ console.warn(msg); }
 
 function parseCSV(text){
   const rows=[];
@@ -187,7 +234,7 @@ function parseCSV(text){
   return rows;
 }
 
-function parse(rows){
+function parseSheetData(rows){
   const d={date:'',round:'',players:[],vsRecord:[],topScorers:{},chem:[],halfStats:[]};
   // Row 0: date col9, round col11
   if(rows[0]){
@@ -428,6 +475,10 @@ function renderHalf(){
     </div>`;
 }
 
+// 시작: 내장 데이터 즉시 표시 후 실시간 fetch 시도
+D = EMBEDDED;
+document.getElementById('last-updated').textContent=`연결 중...`;
+renderAll();
 loadData();
 </script>
 </body>
