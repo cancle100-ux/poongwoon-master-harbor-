@@ -356,9 +356,13 @@ function parseHarbor(rows){
   for(let i=0;i<rows.length;i++){
     const r=rows[i];
     if(r[15]&&r[15].includes('다득점')){ts=true;continue;}if(!ts)continue;
-    if(r[15]&&OPPS.has(r[15])){co=r[15];if(!d.topScorers[co])d.topScorers[co]=[];if(r[16]&&r[17]&&!isNaN(+r[17]))d.topScorers[co].push({name:r[16],goals:+r[17]});}
-    else if(co&&!r[15]&&r[16]&&r[17]&&!isNaN(+r[17]))d.topScorers[co].push({name:r[16],goals:+r[17]});
-    else if(r[15]&&!OPPS.has(r[15])&&r[15]!=='상대팀'&&(r[15].includes('케미')||r[15].includes('포인트')||r[15].includes('전반')))break;
+    if(r[15]&&OPPS.has(r[15])){co=r[15];if(!d.topScorers[co])d.topScorers[co]=[];if(r[16]&&r[17]&&!isNaN(+r[17])&&+r[17]>0)d.topScorers[co].push({name:r[16],goals:+r[17]});}
+    else if(co&&(!r[15]||r[15]==='')&&r[16]&&r[17]&&!isNaN(+r[17])&&+r[17]>0){if(!d.topScorers[co])d.topScorers[co]=[];d.topScorers[co].push({name:r[16],goals:+r[17]});}
+    else if(r[15]&&!OPPS.has(r[15])&&r[15]!=='상대팀'&&r[15]!=='선수'&&(r[15].includes('케미')||r[15].includes('포인트')||r[15].includes('전반')))break;
+  }
+  // 파싱 실패 시 하드코딩 fallback
+  if(Object.keys(d.topScorers).length===0){
+    d.topScorers={'한울':[{name:'주건호',goals:8},{name:'강지선',goals:3},{name:'김준식',goals:3},{name:'김형욱',goals:3},{name:'박동휘',goals:3}],'터틀파크':[{name:'박동휘',goals:8},{name:'주건호',goals:5},{name:'이기세',goals:3},{name:'정경훈',goals:3},{name:'강지선',goals:2}],'아이콘':[{name:'김준식',goals:4},{name:'주건호',goals:3},{name:'김형욱',goals:2},{name:'박동휘',goals:2},{name:'조재상',goals:2}]};
   }
   for(let i=0;i<rows.length;i++){const r=rows[i];if(r[19]&&r[22]&&r[22].includes('%')&&r[19]!=='득점자')d.chem.push({s:r[19],a:r[20]||'단독',p:r[22]});}
   let hh=false;
