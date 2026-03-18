@@ -296,7 +296,11 @@ async function refreshData(){
       fetchTab(GID_HTODAY).catch(()=>null)
     ]);
     HD=parseHarbor(hRows);
-    if(todayRows) HD.rounds=parseTodayMatches(todayRows);
+    // 오늘의경기 탭 파싱 성공하면 사용, 실패하면 HB_ROUNDS 유지
+    if(todayRows){
+      const parsed=parseTodayMatches(todayRows);
+      if(parsed&&parsed.length) HD.rounds=parsed;
+    }
     const n=new Date();
     document.getElementById('last-upd').textContent=`${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} ✅`;
     renderHarbor();
@@ -753,8 +757,8 @@ function renderHarbor(){
       </div>
     </div>
 
-    <!-- 🔥 핫 플레이어 / 🤝 최고 케미 듀오 / 🧤 철벽 키퍼 -->
-    <div class="three-col" style="margin-bottom:16px">
+    <!-- 🔥 핫 플레이어 / 🧤 철벽 키퍼 -->
+    <div class="two-col" style="margin-bottom:16px">
 
       <!-- 핫 플레이어: 경기수 대비 공격포인트 top3 (최소 5경기, 뱃지형) -->
       <div class="panel">
@@ -776,29 +780,6 @@ function renderHarbor(){
                 <div style="font-size:18px;font-weight:700;color:${i===0?'#F57F17':i===1?'#616161':'#BF360C'}">${p.rate.toFixed(2)}</div>
                 <div style="font-size:9px;color:var(--muted)">pts/game</div>
               </div>
-            </div>`).join('');
-        })()}
-      </div>
-
-      <!-- 최고 케미 듀오: chem 데이터에서 지분% 높은 순 -->
-      <div class="panel">
-        <div class="panel-title"><span style="font-size:14px">🤝</span> 최고 케미 듀오
-          <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px">골 지분 기준</span>
-        </div>
-        ${(()=>{
-          if(!d.chem.length)return'';
-          const sorted=[...d.chem].sort((a,b)=>parseFloat(b.p)-parseFloat(a.p)).slice(0,4);
-          const duoColors=['#E91E63','#9C27B0','#3F51B5','#00897B'];
-          return sorted.map((c,i)=>`
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--bg);margin-bottom:6px">
-              <div style="width:32px;height:32px;border-radius:50%;background:${duoColors[i]};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">💫</div>
-              <div style="flex:1">
-                <div style="font-size:12px;font-weight:700">${c.s} <span style="color:var(--muted);font-weight:400">→</span> ${c.a.replace('↔ ','')}</div>
-                <div style="height:5px;background:#eee;border-radius:3px;margin-top:4px;overflow:hidden">
-                  <div style="height:100%;width:${c.p};background:${duoColors[i]};border-radius:3px"></div>
-                </div>
-              </div>
-              <div style="font-size:14px;font-weight:700;color:${duoColors[i]}">${c.p}</div>
             </div>`).join('');
         })()}
       </div>
