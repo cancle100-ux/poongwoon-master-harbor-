@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>여수제일병원 | 정확한 진단, 따뜻한 치료</title>
+<meta name="description" content="의료법인 한마음의료재단 여수제일병원 — 척추·관절센터, 종합검진센터, 24시 응급진료, Philips Ingenia 3.0T MRI. 정확한 진단과 따뜻한 치료로 여수 시민의 건강을 지킵니다.">
+<meta name="theme-color" content="#0b3b73">
+<meta property="og:title" content="여수제일병원">
+<meta property="og:description" content="정확한 진단, 따뜻한 치료 — 여수제일병원이 함께합니다.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* =========================================================
+   여수제일병원 — Design System
+   ========================================================= */
+:root{
+  /* Brand */
+  --navy-900:#07203a;
+  --navy-800:#0b2d52;
+  --navy-700:#0b3b73;
+  --blue-600:#1356a4;
+  --blue-500:#1c6fcf;
+  --blue-400:#3b8ae6;
+  --sky-100:#eaf3fd;
+  --sky-50:#f4f9ff;
+  --teal-500:#13a594;
+  --teal-400:#1bc2ad;
+  --mint-100:#e6fbf6;
+  /* Neutral */
+  --ink:#0e1b2b;
+  --text:#1d2c3d;
+  --muted:#5e6f81;
+  --faint:#90a1b2;
+  --line:#e6ecf3;
+  --line-2:#eef3f8;
+  --bg:#ffffff;
+  --bg-soft:#f6f9fc;
+  --bg-tint:#eef5fc;
+  /* Effects */
+  --radius:18px;
+  --radius-sm:12px;
+  --radius-lg:28px;
+  --shadow-sm:0 2px 10px rgba(13,45,82,.06);
+  --shadow:0 14px 40px rgba(13,45,82,.10);
+  --shadow-lg:0 30px 70px rgba(8,30,60,.18);
+  --ring:0 0 0 4px rgba(28,111,207,.16);
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --maxw:1180px;
+  --grad-brand:linear-gradient(120deg,#0b3b73 0%,#1356a4 45%,#13a594 100%);
+  --grad-soft:linear-gradient(135deg,#eaf3fd 0%,#e6fbf6 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Pretendard','Pretendard Variable',-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  color:var(--text);background:var(--bg);line-height:1.6;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;letter-spacing:-.01em;
+}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;display:block;}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--blue-600);text-transform:uppercase;}
+.eyebrow::before{content:"";width:22px;height:2px;border-radius:2px;background:var(--teal-500);display:inline-block;}
+.section{padding:96px 0;}
+.section-head{max-width:720px;margin-bottom:48px;}
+.section-head h2{font-size:clamp(26px,3.4vw,40px);font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1.22;margin:14px 0 14px;}
+.section-head p{font-size:16px;color:var(--muted);}
+.section-head.center{margin-left:auto;margin-right:auto;text-align:center;}
+.section-head.center .eyebrow{justify-content:center;}
+
+/* ============ Top utility bar ============ */
+.topbar{background:var(--navy-900);color:#cfe0f2;font-size:12.5px;}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:40px;}
+.topbar a{display:inline-flex;align-items:center;gap:6px;opacity:.85;transition:opacity .2s;}
+.topbar a:hover{opacity:1;}
+.topbar .tb-left{display:flex;gap:20px;}
+.topbar .tb-right{display:flex;gap:18px;}
+.topbar .pill{color:var(--teal-400);font-weight:700;}
+@media(max-width:760px){.topbar .tb-left span:not(.pill){display:none;}}
+
+/* ============ Header / Nav ============ */
+.header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line-2);transition:box-shadow .3s,background .3s;}
+.header.scrolled{box-shadow:0 8px 30px rgba(13,45,82,.08);}
+.nav{display:flex;align-items:center;height:74px;gap:36px;}
+.brand{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.brand .mark{width:42px;height:42px;border-radius:12px;background:var(--grad-brand);display:grid;place-items:center;box-shadow:0 6px 16px rgba(19,86,164,.35);}
+.brand .mark svg{width:24px;height:24px;}
+.brand .bt{line-height:1.1;}
+.brand .bt b{display:block;font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.04em;}
+.brand .bt small{font-size:10.5px;font-weight:600;letter-spacing:.18em;color:var(--faint);text-transform:uppercase;}
+.menu{display:flex;gap:6px;margin-left:8px;}
+.menu a{position:relative;padding:10px 16px;font-size:15px;font-weight:600;color:var(--text);border-radius:10px;transition:color .2s,background .2s;}
+.menu a:hover{color:var(--blue-600);background:var(--sky-50);}
+.menu a::after{content:"";position:absolute;left:16px;right:16px;bottom:4px;height:2px;background:var(--teal-500);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease);border-radius:2px;}
+.menu a:hover::after{transform:scaleX(1);}
+.nav-cta{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;border-radius:12px;padding:12px 22px;cursor:pointer;border:none;transition:transform .2s var(--ease),box-shadow .25s,background .2s,color .2s;white-space:nowrap;}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--grad-brand);color:#fff;box-shadow:0 10px 24px rgba(19,86,164,.30);}
+.btn-primary:hover{box-shadow:0 16px 34px rgba(19,86,164,.42);transform:translateY(-2px);}
+.btn-ghost{background:#fff;color:var(--blue-600);border:1.5px solid var(--line);}
+.btn-ghost:hover{border-color:var(--blue-400);color:var(--blue-500);background:var(--sky-50);}
+.btn-light{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.28);backdrop-filter:blur(6px);}
+.btn-light:hover{background:rgba(255,255,255,.22);}
+.btn-lg{padding:15px 28px;font-size:16px;border-radius:14px;}
+.hamburger{display:none;width:44px;height:44px;border-radius:11px;border:1px solid var(--line);background:#fff;cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
+.hamburger span{width:20px;height:2px;background:var(--ink);border-radius:2px;transition:.25s;}
+.mobile-menu{display:none;}
+
+/* ============ Hero ============ */
+.hero{position:relative;background:
+   radial-gradient(1100px 600px at 78% -10%,rgba(27,194,173,.16),transparent 60%),
+   radial-gradient(900px 700px at 10% 110%,rgba(28,111,207,.12),transparent 55%),
+   linear-gradient(180deg,#f4f9ff 0%,#ffffff 70%);
+  overflow:hidden;padding:74px 0 88px;}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);padding:8px 16px;border-radius:30px;font-size:13.5px;font-weight:700;color:var(--blue-600);}
+.hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--teal-500);box-shadow:0 0 0 4px rgba(19,165,148,.18);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(19,165,148,.18);}50%{box-shadow:0 0 0 8px rgba(19,165,148,.04);}}
+.hero h1{font-size:clamp(34px,5vw,60px);font-weight:800;letter-spacing:-.045em;line-height:1.12;color:var(--ink);margin:22px 0 20px;}
+.hero h1 .grad{background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p.lead{font-size:18px;color:var(--muted);max-width:520px;margin-bottom:32px;}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;}
+.hero-stats{display:flex;gap:34px;margin-top:46px;padding-top:30px;border-top:1px solid var(--line);}
+.hero-stats .st b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--blue-600);line-height:1;}
+.hero-stats .st span{font-size:13px;color:var(--muted);margin-top:6px;display:block;}
+
+/* Hero visual — MRI scanner card */
+.hero-visual{position:relative;}
+.mri-card{position:relative;background:linear-gradient(160deg,#0b2d52,#07203a 70%);border-radius:var(--radius-lg);padding:30px;box-shadow:var(--shadow-lg);overflow:hidden;}
+.mri-card::before{content:"";position:absolute;inset:0;background:radial-gradient(420px 240px at 70% 20%,rgba(27,194,173,.28),transparent 60%);}
+.mri-stage{position:relative;height:300px;display:grid;place-items:center;}
+.mri-tag{position:absolute;top:22px;left:22px;z-index:3;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(8px);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:20px;}
+.mri-tag .dot{width:7px;height:7px;border-radius:50%;background:var(--teal-400);}
+.mri-svg{width:100%;max-width:340px;position:relative;z-index:2;filter:drop-shadow(0 18px 30px rgba(0,0,0,.4));}
+.mri-ring{transform-origin:center;animation:spin 14s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.mri-info{position:relative;z-index:2;margin-top:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px 20px;color:#eaf3fd;backdrop-filter:blur(6px);}
+.mri-info h4{font-size:17px;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px;}
+.mri-info h4 small{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--teal-400);background:rgba(19,165,148,.18);padding:3px 8px;border-radius:6px;}
+.mri-info p{font-size:13px;color:#aec6e0;margin-top:8px;}
+.mri-specs{display:flex;gap:24px;margin-top:14px;}
+.mri-specs div b{display:block;font-size:18px;font-weight:800;color:var(--teal-400);}
+.mri-specs div span{font-size:11px;color:#8fa9c6;}
+.floaty{position:absolute;background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:5;}
+.floaty .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;}
+.floaty b{font-size:14px;font-weight:800;color:var(--ink);display:block;}
+.floaty span{font-size:11.5px;color:var(--muted);}
+.floaty.f1{top:6px;right:-14px;animation:float 5s ease-in-out infinite;}
+.floaty.f2{bottom:18px;left:-22px;animation:float 5s ease-in-out infinite .8s;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+
+/* ============ Feature strip (4 cards) ============ */
+.features{position:relative;margin-top:-44px;z-index:6;}
+.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+.feature{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;box-shadow:var(--shadow-sm);transition:transform .35s var(--ease),box-shadow .35s,border-color .3s;position:relative;overflow:hidden;}
+.feature::after{content:"";position:absolute;left:0;top:0;height:3px;width:100%;background:var(--grad-brand);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease);}
+.feature:hover{transform:translateY(-8px);box-shadow:var(--shadow);border-color:transparent;}
+.feature:hover::after{transform:scaleX(1);}
+.feature .fic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;margin-bottom:18px;background:var(--grad-soft);}
+.feature .fic svg{width:26px;height:26px;}
+.feature h3{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.feature .ftag{font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--teal-500);text-transform:uppercase;}
+.feature p{font-size:14px;color:var(--muted);margin-top:8px;}
+
+/* ============ MRI / Equipment dark section ============ */
+.equip{background:linear-gradient(150deg,#07203a 0%,#0b2d52 55%,#0c3a5e 100%);color:#fff;position:relative;overflow:hidden;}
+.equip::before{content:"";position:absolute;inset:0;background:radial-gradient(700px 400px at 85% 0%,rgba(27,194,173,.18),transparent 60%),radial-gradient(600px 500px at 0% 100%,rgba(28,111,207,.18),transparent 60%);}
+.equip .wrap{position:relative;}
+.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+.equip .eyebrow{color:var(--teal-400);}
+.equip .eyebrow::before{background:var(--teal-400);}
+.equip h2{font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.2;margin:16px 0 18px;}
+.equip h2 em{font-style:normal;color:var(--teal-400);}
+.equip p.lead{font-size:16px;color:#b6cce4;max-width:480px;}
+.equip-specs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;}
+.spec{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;}
+.spec b{font-size:30px;font-weight:800;color:#fff;letter-spacing:-.03em;display:block;}
+.spec b i{font-style:normal;color:var(--teal-400);font-size:18px;}
+.spec span{font-size:12.5px;color:#9db8d6;margin-top:4px;display:block;}
+.equip-visual{position:relative;display:grid;place-items:center;}
+.equip-orb{position:relative;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle at 50% 40%,rgba(27,194,173,.35),rgba(11,45,82,.1) 60%);display:grid;place-items:center;}
+.equip-orb .ring{position:absolute;border:1px solid rgba(255,255,255,.12);border-radius:50%;}
+.equip-orb .r1{inset:0;animation:spin 22s linear infinite;}
+.equip-orb .r2{inset:34px;border-style:dashed;border-color:rgba(27,194,173,.3);animation:spin 16s linear infinite reverse;}
+.equip-orb .r3{inset:72px;border-color:rgba(255,255,255,.18);}
+.equip-orb .core{width:150px;height:150px;border-radius:50%;background:linear-gradient(160deg,#13a594,#1c6fcf);display:grid;place-items:center;box-shadow:0 0 60px rgba(27,194,173,.5);}
+.equip-orb .core b{font-size:34px;font-weight:800;color:#fff;line-height:1;}
+.equip-orb .core span{font-size:12px;color:#dff6f1;}
+
+/* ============ Departments ============ */
+.dept-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.dept{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 18px;transition:transform .3s var(--ease),box-shadow .3s,border-color .3s;cursor:default;}
+.dept:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:var(--sky-100);}
+.dept .di{width:44px;height:44px;border-radius:12px;background:var(--bg-tint);display:grid;place-items:center;flex-shrink:0;color:var(--blue-600);}
+.dept .di svg{width:22px;height:22px;}
+.dept b{font-size:15.5px;font-weight:700;color:var(--ink);display:block;}
+.dept span{font-size:12px;color:var(--faint);letter-spacing:.04em;}
+.center-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;}
+.ccard{position:relative;border-radius:var(--radius);padding:30px;overflow:hidden;color:#fff;min-height:200px;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .35s var(--ease);}
+.ccard:hover{transform:translateY(-6px);}
+.ccard::before{content:"";position:absolute;inset:0;z-index:0;transition:transform .6s var(--ease);}
+.ccard:hover::before{transform:scale(1.06);}
+.ccard.c1::before{background:linear-gradient(150deg,#1356a4,#07203a);}
+.ccard.c2::before{background:linear-gradient(150deg,#13a594,#0b3b73);}
+.ccard.c3::before{background:linear-gradient(150deg,#1c6fcf,#0c3a5e);}
+.ccard .cc-ic{position:relative;z-index:1;width:48px;height:48px;border-radius:13px;background:rgba(255,255,255,.16);display:grid;place-items:center;margin-bottom:auto;}
+.ccard h4{position:relative;z-index:1;font-size:21px;font-weight:800;margin:18px 0 6px;}
+.ccard p{position:relative;z-index:1;font-size:13.5px;color:rgba(255,255,255,.82);}
+.ccard .more{position:relative;z-index:1;margin-top:14px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;color:#fff;}
+.ccard .more svg{width:15px;height:15px;transition:transform .3s;}
+.ccard:hover .more svg{transform:translateX(4px);}
+
+/* ============ Health check packages ============ */
+.checkup{background:var(--bg-soft);}
+.pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+.pkg{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:30px 28px;position:relative;transition:transform .35s var(--ease),box-shadow .35s;display:flex;flex-direction:column;}
+.pkg:hover{transform:translateY(-6px);box-shadow:var(--shadow);}
+.pkg.featured{border:1.5px solid var(--blue-400);box-shadow:var(--shadow);}
+.pkg .badge{position:absolute;top:-13px;left:28px;background:var(--grad-brand);color:#fff;font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;box-shadow:0 8px 18px rgba(19,86,164,.3);}
+.pkg h3{font-size:20px;font-weight:800;color:var(--ink);}
+.pkg .desc{font-size:13.5px;color:var(--muted);margin:6px 0 18px;min-height:40px;}
+.pkg .price{font-size:14px;color:var(--faint);}
+.pkg .price b{font-size:30px;font-weight:800;color:var(--blue-600);letter-spacing:-.03em;}
+.pkg ul{list-style:none;margin:20px 0 24px;display:flex;flex-direction:column;gap:11px;}
+.pkg ul li{display:flex;gap:10px;font-size:14px;color:var(--text);}
+.pkg ul li svg{width:18px;height:18px;flex-shrink:0;color:var(--teal-500);margin-top:2px;}
+.pkg .btn{margin-top:auto;width:100%;}
+
+/* ============ News ============ */
+.news-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.ncard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:transform .35s var(--ease),box-shadow .35s;display:flex;flex-direction:column;}
+.ncard:hover{transform:translateY(-6px);box-shadow:var(--shadow);}
+.ncard .thumb{height:150px;position:relative;overflow:hidden;display:grid;place-items:center;}
+.ncard .thumb svg{width:60px;height:60px;opacity:.92;}
+.ncard.n1 .thumb{background:linear-gradient(140deg,#1356a4,#3b8ae6);}
+.ncard.n2 .thumb{background:linear-gradient(140deg,#13a594,#1bc2ad);}
+.ncard.n3 .thumb{background:linear-gradient(140deg,#0b3b73,#1c6fcf);}
+.ncard.n4 .thumb{background:linear-gradient(140deg,#0c3a5e,#13a594);}
+.ncard .cat{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.92);color:var(--blue-600);font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;}
+.ncard .nbody{padding:20px;flex:1;display:flex;flex-direction:column;}
+.ncard h4{font-size:16px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ncard p{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ncard .date{margin-top:auto;padding-top:14px;font-size:12.5px;color:var(--faint);font-weight:600;}
+
+/* ============ Visit / info ============ */
+.visit{background:linear-gradient(180deg,#fff,#f4f9ff);}
+.visit-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:stretch;}
+.info-list{display:flex;flex-direction:column;gap:14px;}
+.info-row{display:flex;gap:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;transition:box-shadow .3s,transform .3s;}
+.info-row:hover{box-shadow:var(--shadow);transform:translateX(4px);}
+.info-row .ir-ic{width:48px;height:48px;border-radius:13px;background:var(--grad-soft);display:grid;place-items:center;flex-shrink:0;color:var(--blue-600);}
+.info-row .ir-ic svg{width:24px;height:24px;}
+.info-row b{font-size:13px;color:var(--teal-500);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+.info-row .v{font-size:17px;font-weight:700;color:var(--ink);margin-top:3px;}
+.info-row .s{font-size:13.5px;color:var(--muted);margin-top:2px;}
+.hours-card{background:linear-gradient(155deg,#0b3b73,#07203a);border-radius:var(--radius-lg);padding:36px;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.hours-card::before{content:"";position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(27,194,173,.3),transparent 70%);}
+.hours-card h3{font-size:22px;font-weight:800;position:relative;}
+.hours-card .sub{font-size:13.5px;color:#a9c4e2;margin-top:6px;position:relative;}
+.hours-list{margin-top:24px;position:relative;display:flex;flex-direction:column;gap:2px;}
+.hours-list .hr{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:14.5px;}
+.hours-list .hr:last-child{border-bottom:none;}
+.hours-list .hr span{color:#c9dcf0;}
+.hours-list .hr b{font-weight:700;}
+.hours-list .hr .off{color:#ff9a8b;}
+.emergency{margin-top:auto;position:relative;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;}
+.emergency .eb{width:46px;height:46px;border-radius:50%;background:#e8553d;display:grid;place-items:center;flex-shrink:0;animation:pulse-red 1.8s infinite;}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(232,85,61,.5);}50%{box-shadow:0 0 0 12px rgba(232,85,61,0);}}
+.emergency b{font-size:13px;color:#ffd5cc;}
+.emergency .num{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em;}
+
+/* ============ CTA band ============ */
+.cta-band{position:relative;background:var(--grad-brand);overflow:hidden;}
+.cta-band::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 80% 120%,rgba(255,255,255,.16),transparent 60%);}
+.cta-inner{position:relative;text-align:center;padding:80px 0;color:#fff;}
+.cta-inner h2{font-size:clamp(26px,3.6vw,42px);font-weight:800;letter-spacing:-.03em;margin-bottom:14px;}
+.cta-inner p{font-size:17px;color:rgba(255,255,255,.86);margin-bottom:30px;}
+.cta-inner .hero-actions{justify-content:center;}
+
+/* ============ Footer ============ */
+.footer{background:var(--navy-900);color:#9fb6cf;padding:64px 0 30px;font-size:13.5px;}
+.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,.1);}
+.footer .brand .bt b{color:#fff;}
+.footer .fdesc{margin-top:18px;color:#7e98b5;max-width:300px;line-height:1.7;}
+.footer h5{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px;}
+.footer ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.footer ul a{color:#9fb6cf;transition:color .2s;}
+.footer ul a:hover{color:var(--teal-400);}
+.footer .fbottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;font-size:12.5px;color:#6f89a6;flex-wrap:wrap;gap:10px;}
+.footer .fbottom .legal{display:flex;gap:18px;}
+
+/* ============ Scroll reveal ============ */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s var(--ease),transform .7s var(--ease);}
+.reveal.in{opacity:1;transform:none;}
+.reveal[data-d="1"]{transition-delay:.08s;}
+.reveal[data-d="2"]{transition-delay:.16s;}
+.reveal[data-d="3"]{transition-delay:.24s;}
+.reveal[data-d="4"]{transition-delay:.32s;}
+/* word-by-word headline reveal */
+.tw{display:inline-block;overflow:hidden;vertical-align:top;}
+.tw>span{display:inline-block;transform:translateY(110%);transition:transform .8s var(--ease);}
+.tw.in>span{transform:none;}
+
+/* ============ Back to top ============ */
+.totop{position:fixed;right:24px;bottom:24px;width:50px;height:50px;border-radius:14px;background:var(--grad-brand);color:#fff;border:none;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(12px);transition:.3s;z-index:90;}
+.totop.show{opacity:1;visibility:visible;transform:none;}
+.totop:hover{transform:translateY(-3px);}
+
+/* ============ Responsive ============ */
+@media(max-width:980px){
+  .hero-grid{grid-template-columns:1fr;gap:40px;}
+  .hero-visual{max-width:460px;}
+  .feature-grid{grid-template-columns:repeat(2,1fr);}
+  .equip-grid{grid-template-columns:1fr;gap:40px;}
+  .equip-visual{order:-1;}
+  .dept-grid{grid-template-columns:repeat(2,1fr);}
+  .center-row{grid-template-columns:1fr;}
+  .pkg-grid{grid-template-columns:1fr;}
+  .news-grid{grid-template-columns:repeat(2,1fr);}
+  .visit-grid{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:28px;}
+}
+@media(max-width:760px){
+  .menu,.nav-cta .btn-ghost{display:none;}
+  .hamburger{display:flex;}
+  .nav-cta{margin-left:auto;}
+  .section{padding:64px 0;}
+  .feature-grid{grid-template-columns:1fr;}
+  .news-grid{grid-template-columns:1fr;}
+  .dept-grid{grid-template-columns:1fr;}
+  .equip-specs{grid-template-columns:1fr;}
+  .hero-stats{gap:20px;flex-wrap:wrap;}
+  .footer-grid{grid-template-columns:1fr;}
+  .floaty.f2{left:-6px;}
+  .floaty.f1{right:-6px;}
+  .mobile-menu.open{display:block;position:fixed;inset:0;top:0;background:rgba(7,32,58,.6);backdrop-filter:blur(6px);z-index:200;}
+  .mobile-menu .mm-panel{position:absolute;top:0;right:0;width:min(82%,320px);height:100%;background:#fff;padding:28px 24px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-lg);animation:slideIn .3s var(--ease);}
+  @keyframes slideIn{from{transform:translateX(100%);}to{transform:none;}}
+  .mobile-menu .mm-panel a{padding:14px 12px;font-size:17px;font-weight:600;border-radius:10px;color:var(--ink);}
+  .mobile-menu .mm-panel a:hover{background:var(--sky-50);}
+  .mobile-menu .mm-close{align-self:flex-end;background:none;border:none;font-size:26px;cursor:pointer;color:var(--muted);margin-bottom:8px;}
+  .mobile-menu .mm-panel .btn{margin-top:14px;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;}
+  .reveal,.tw>span{transition:none;opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ Top utility bar ============ -->
+<div class="topbar">
+  <div class="wrap">
+    <div class="tb-left">
+      <a href="#visit"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg> 전남 여수시 쌍봉로 70 (학동)</a>
+      <span>의료법인 한마음의료재단</span>
+    </div>
+    <div class="tb-right">
+      <a href="tel:061-689-8119"><span class="pill">응급실 24시</span> 061-689-8119</a>
+      <a href="#news">공지사항</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Header ============ -->
+<header class="header" id="header">
+  <div class="wrap">
+    <nav class="nav">
+      <a href="#top" class="brand">
+        <span class="mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 8 3 4 7 4c2 0 3.5 1.2 5 3 1.5-1.8 3-3 5-3 4 0 6 4 4.5 8C19 16.65 12 21 12 21Z"/><path d="M3.5 12H8l1.5-3 2.5 6 1.5-3h4"/></svg>
+        </span>
+        <span class="bt"><b>여수제일병원</b><small>Yeosu Jeil Hospital</small></span>
+      </a>
+      <div class="menu">
+        <a href="#about">병원소개</a>
+        <a href="#departments">진료안내</a>
+        <a href="#equip">첨단장비</a>
+        <a href="#checkup">검진센터</a>
+        <a href="#news">병원소식</a>
+        <a href="#visit">오시는길</a>
+      </div>
+      <div class="nav-cta">
+        <a href="tel:061-689-8114" class="btn btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+          061-689-8114
+        </a>
+        <a href="#cta" class="btn btn-primary">진료예약</a>
+        <button class="hamburger" id="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mm-panel">
+    <button class="mm-close" id="mmClose" aria-label="닫기">&times;</button>
+    <a href="#about">병원소개</a>
+    <a href="#departments">진료안내</a>
+    <a href="#equip">첨단장비</a>
+    <a href="#checkup">검진센터</a>
+    <a href="#news">병원소식</a>
+    <a href="#visit">오시는길</a>
+    <a href="#cta" class="btn btn-primary">진료예약 바로가기</a>
+  </div>
+</div>
+
+<span id="top"></span>
+
+<!-- ============ Hero ============ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <span class="hero-badge reveal in"><span class="dot"></span>여수 종합병원 · 24시 응급진료</span>
+        <h1>
+          <span class="tw" data-tw><span>정확한 진단,</span></span><br>
+          <span class="tw" data-tw><span><b class="grad">따뜻한 치료</b></span></span><br>
+          <span class="tw" data-tw><span>여수제일병원이 함께합니다</span></span>
+        </h1>
+        <p class="lead reveal">척추·관절, 종합검진, 영상의학까지 — 풍부한 임상경험의 전문 의료진과
+        Philips Ingenia 3.0T MRI로 한 분 한 분께 신뢰받는 의료를 제공합니다.</p>
+        <div class="hero-actions reveal" data-d="1">
+          <a href="#cta" class="btn btn-primary btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            간편하게 진료예약
+          </a>
+          <a href="#visit" class="btn btn-ghost btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            오시는 길 · 진료시간
+          </a>
+        </div>
+        <div class="hero-stats reveal" data-d="2">
+          <div class="st"><b data-count="24">0</b><span>24시간 응급진료</span></div>
+          <div class="st"><b data-count="15" data-suffix="+">0</b><span>진료 과목</span></div>
+          <div class="st"><b data-count="3.0" data-dec="1" data-suffix="T">0</b><span>MRI 자기장 강도</span></div>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal" data-d="1">
+        <div class="mri-card">
+          <span class="mri-tag"><span class="dot"></span>최신 영상의학 장비 도입</span>
+          <div class="mri-stage">
+            <svg class="mri-svg" viewBox="0 0 360 260" fill="none">
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#eaf3fd"/><stop offset="1" stop-color="#9db8d6"/>
+                </linearGradient>
+                <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#1bc2ad"/><stop offset="1" stop-color="#13a594"/>
+                </linearGradient>
+              </defs>
+              <!-- bed -->
+              <rect x="40" y="158" width="280" height="20" rx="6" fill="#cdddee"/>
+              <rect x="120" y="138" width="170" height="26" rx="12" fill="#fff"/>
+              <circle cx="135" cy="151" r="9" fill="#9db8d6"/>
+              <!-- gantry outer -->
+              <g class="mri-ring">
+                <circle cx="170" cy="120" r="96" stroke="url(#g1)" stroke-width="20" opacity=".5"/>
+              </g>
+              <circle cx="170" cy="120" r="96" stroke="#e3edf7" stroke-width="46" opacity=".55"/>
+              <circle cx="170" cy="120" r="70" fill="#0b2d52"/>
+              <circle cx="170" cy="120" r="70" stroke="url(#g2)" stroke-width="3" opacity=".8"/>
+              <circle cx="170" cy="120" r="52" fill="#07203a"/>
+              <circle cx="170" cy="120" r="40" stroke="#1bc2ad" stroke-width="2" stroke-dasharray="6 8" opacity=".7" class="mri-ring"/>
+              <text x="170" y="116" text-anchor="middle" fill="#fff" font-size="22" font-weight="800">3.0T</text>
+              <text x="170" y="134" text-anchor="middle" fill="#7fd9cb" font-size="10" font-weight="600">INGENIA</text>
+            </svg>
+          </div>
+          <div class="mri-info">
+            <h4>Philips Ingenia 3.0T <small>DIGITAL MRI</small></h4>
+            <p>디지털 광대역 기술로 더 선명한 영상과 빠른 검사 시간. 뇌·척추·관절 정밀 진단에 최적화되었습니다.</p>
+            <div class="mri-specs">
+              <div><b>3.0T</b><span>자기장 강도</span></div>
+              <div><b>↓40%</b><span>검사 시간 단축</span></div>
+              <div><b>70cm</b><span>넓은 보어 설계</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="floaty f1">
+          <span class="ic" style="background:var(--mint-100)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#13a594" stroke-width="2.2"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+          <div><b>검진 예약</b><span>온라인 간편 접수</span></div>
+        </div>
+        <div class="floaty f2">
+          <span class="ic" style="background:var(--sky-100)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1356a4" stroke-width="2.2"><path d="M12 2v20M2 12h20"/></svg></span>
+          <div><b>응급의료</b><span>365일 연중무휴</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Feature strip ============ -->
+<section class="features">
+  <div class="wrap">
+    <div class="feature-grid">
+      <div class="feature reveal">
+        <div class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="#1356a4" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div>
+        <span class="ftag">Smart System</span>
+        <h3>간편한 진료</h3>
+        <p>전화 한 통, 클릭 한 번으로 끝나는 예약·접수. 대기 시간을 줄여 진료에 집중합니다.</p>
+      </div>
+      <div class="feature reveal" data-d="1">
+        <div class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="#13a594" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg></div>
+        <span class="ftag">Precision</span>
+        <h3>정밀한 검사</h3>
+        <p>3.0T MRI·CT·초음파 등 최신 영상장비로 작은 이상도 놓치지 않는 정밀 진단.</p>
+      </div>
+      <div class="feature reveal" data-d="2">
+        <div class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="#1356a4" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg></div>
+        <span class="ftag">Comfort</span>
+        <h3>편안한 검사</h3>
+        <p>넓은 보어 설계와 쾌적한 검사 환경, 친절한 안내로 부담 없이 받는 검사.</p>
+      </div>
+      <div class="feature reveal" data-d="3">
+        <div class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="#13a594" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <span class="ftag">Safety</span>
+        <h3>안전한 검사</h3>
+        <p>철저한 감염관리와 검증된 프로토콜. 환자 안전을 최우선으로 하는 의료 시스템.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ About ============ -->
+<section class="section" id="about">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">ABOUT US</span>
+      <h2>여수 시민의 건강을 지켜온<br>믿을 수 있는 종합병원</h2>
+      <p>여수제일병원은 의료법인 한마음의료재단이 운영하는 종합병원으로, 환자 중심의 진료 철학 아래
+      정확한 진단과 따뜻한 치료를 실천합니다. 척추·관절 전문 진료부터 종합검진, 24시간 응급의료까지
+      지역 거점 의료기관으로서의 역할을 다하고 있습니다.</p>
+    </div>
+    <div class="dept-grid" style="margin-bottom:0">
+      <div class="dept reveal">
+        <span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v1a5 5 0 0 0-2 4 5 5 0 0 0 5 5h2a5 5 0 0 0 5-5 5 5 0 0 0-2-4V6a4 4 0 0 0-4-4Z"/><path d="M12 16v6"/></svg></span>
+        <div><b>환자 중심 진료</b><span>PATIENT FIRST</span></div>
+      </div>
+      <div class="dept reveal" data-d="1">
+        <span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 22v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6M19 8v6"/></svg></span>
+        <div><b>전문 의료진</b><span>SPECIALISTS</span></div>
+      </div>
+      <div class="dept reveal" data-d="2">
+        <span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+        <div><b>24시 응급의료</b><span>EMERGENCY</span></div>
+      </div>
+      <div class="dept reveal" data-d="3">
+        <span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+        <div><b>첨단 의료장비</b><span>HIGH-TECH</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Equipment / MRI ============ -->
+<section class="section equip" id="equip">
+  <div class="wrap">
+    <div class="equip-grid">
+      <div class="equip-text">
+        <span class="eyebrow reveal">PREMIUM MRI</span>
+        <h2 class="reveal" data-d="1">Philips <em>Ingenia 3.0T</em><br>디지털 MRI 도입</h2>
+        <p class="lead reveal" data-d="2">필립스의 디지털 광대역(dStream) 기술이 적용된 3.0T MRI로
+        더 선명한 영상과 짧아진 검사 시간을 동시에 구현했습니다. 뇌·척추·관절·복부 등
+        전신 정밀 진단으로 질환의 조기 발견을 돕습니다.</p>
+        <div class="equip-specs">
+          <div class="spec reveal" data-d="1"><b data-count="3.0" data-dec="1">0</b><span>테슬라(T) 고자기장</span></div>
+          <div class="spec reveal" data-d="2"><b data-count="40" data-prefix="↓">0<i>%</i></b><span>검사시간 단축</span></div>
+          <div class="spec reveal" data-d="3"><b data-count="70">0<i>cm</i></b><span>넓은 보어 설계</span></div>
+        </div>
+        <a href="#cta" class="btn btn-primary btn-lg reveal" data-d="2" style="margin-top:34px">MRI 검사 예약 문의</a>
+      </div>
+      <div class="equip-visual reveal" data-d="1">
+        <div class="equip-orb">
+          <span class="ring r1"></span>
+          <span class="ring r2"></span>
+          <span class="ring r3"></span>
+          <div class="core"><b>3.0T</b><span>INGENIA</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Departments & Centers ============ -->
+<section class="section" id="departments">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">CLINICAL SERVICES</span>
+      <h2>진료 안내</h2>
+      <p>내과계부터 외과계, 영상의학까지 — 다양한 진료과와 전문 센터에서
+      한 곳에서 진단과 치료를 받으실 수 있습니다.</p>
+    </div>
+    <div class="dept-grid">
+      <div class="dept reveal"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span><div><b>내과</b><span>INTERNAL MED.</span></div></div>
+      <div class="dept reveal" data-d="1"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2a3 3 0 0 0-3 3v1a3 3 0 0 0 0 6 3 3 0 0 0 3 3 3 3 0 0 0 6 0 3 3 0 0 0 3-3 3 3 0 0 0 0-6V5a3 3 0 0 0-6-1Z"/></svg></span><div><b>신경과</b><span>NEUROLOGY</span></div></div>
+      <div class="dept reveal" data-d="2"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></span><div><b>신경외과</b><span>NEUROSURGERY</span></div></div>
+      <div class="dept reveal" data-d="3"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M4 8h16M6 12h2m4 0h2m-8 4h2m4 0h2"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg></span><div><b>정형외과</b><span>ORTHOPEDICS</span></div></div>
+      <div class="dept reveal"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v6a6 6 0 0 0 12 0V3M9 21a3 3 0 0 1 6 0"/><path d="M12 15v6"/></svg></span><div><b>외과</b><span>SURGERY</span></div></div>
+      <div class="dept reveal" data-d="1"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a8 8 0 0 0 8-8c0-3.5-2-6-4-8s-4-3.5-4-3.5S10 4 8 6s-4 4.5-4 8a8 8 0 0 0 8 8Z"/></svg></span><div><b>마취통증의학과</b><span>PAIN CLINIC</span></div></div>
+      <div class="dept reveal" data-d="2"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v8M9 18h6"/></svg></span><div><b>산부인과</b><span>OB/GYN</span></div></div>
+      <div class="dept reveal" data-d="3"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><path d="M12 8v6m-4 7 4-7 4 7M6 11h12"/></svg></span><div><b>소아청소년과</b><span>PEDIATRICS</span></div></div>
+      <div class="dept reveal"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg></span><div><b>영상의학과</b><span>RADIOLOGY</span></div></div>
+      <div class="dept reveal" data-d="1"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></span><div><b>재활의학과</b><span>REHAB. MED.</span></div></div>
+      <div class="dept reveal" data-d="2"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg></span><div><b>응급의학과</b><span>EMERGENCY</span></div></div>
+      <div class="dept reveal" data-d="3"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM3 21a6 6 0 0 1 12 0M16 3.13a4 4 0 0 1 0 7.75M21 21a6 6 0 0 0-3-5.19"/></svg></span><div><b>정신건강의학과</b><span>PSYCHIATRY</span></div></div>
+    </div>
+
+    <div class="center-row">
+      <a href="#cta" class="ccard c1 reveal">
+        <span class="cc-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M8 2v4M16 2v4M5 9h14M12 9v13"/><path d="M9 13h6M9 17h6"/></svg></span>
+        <h4>척추 · 관절센터</h4>
+        <p>디스크, 협착증, 인공관절, 스포츠 손상까지 비수술·수술 치료를 아우르는 전문 센터.</p>
+        <span class="more">자세히 보기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a href="#checkup" class="ccard c2 reveal" data-d="1">
+        <span class="cc-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <h4>종합검진센터</h4>
+        <p>성인병·암 조기발견을 위한 맞춤형 종합검진. 3.0T MRI 연계 정밀 프로그램 운영.</p>
+        <span class="more">검진 프로그램 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a href="tel:061-689-8119" class="ccard c3 reveal" data-d="2">
+        <span class="cc-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span>
+        <h4>24시 응급센터</h4>
+        <p>365일 연중무휴 응급의료 체계. 야간·휴일에도 신속하고 안전한 응급진료.</p>
+        <span class="more">응급실 061-689-8119 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Checkup packages ============ -->
+<section class="section checkup" id="checkup">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">HEALTH CHECK-UP</span>
+      <h2>종합검진 프로그램</h2>
+      <p>고혈압·당뇨·뇌졸중 등 성인병은 물론 주요 암까지 — 연령과 목적에 맞춰
+      구성한 맞춤형 검진으로 건강을 미리 챙기세요.</p>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg reveal">
+        <h3>기본 건강검진</h3>
+        <p class="desc">기본 혈액·소변검사와 흉부 X-ray, 심전도 등 핵심 항목으로 구성된 입문 검진.</p>
+        <div class="price"><b>핵심</b> 항목 중심</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 신체계측 · 혈압 · 시력</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 혈액 · 소변 기본검사</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 흉부 X-ray · 심전도</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 전문의 결과 상담</li>
+        </ul>
+        <a href="#cta" class="btn btn-ghost">상담 예약</a>
+      </div>
+      <div class="pkg featured reveal" data-d="1">
+        <span class="badge">가장 인기</span>
+        <h3>정밀 종합검진</h3>
+        <p class="desc">위·대장 내시경과 복부·갑상선 초음파를 포함한 폭넓은 성인병·암 검진.</p>
+        <div class="price"><b>정밀</b> 프로그램</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 위·대장 내시경 검사</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 복부 · 갑상선 초음파</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 골밀도 · 동맥경화 검사</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 종양표지자 혈액검사</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary">검진 예약하기</a>
+      </div>
+      <div class="pkg reveal" data-d="2">
+        <h3>프리미엄 MRI 검진</h3>
+        <p class="desc">3.0T MRI를 활용한 뇌·척추 정밀검진으로 뇌졸중·디스크를 조기에 발견.</p>
+        <div class="price"><b>3.0T</b> MRI 연계</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 뇌 MRI · MRA 정밀촬영</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 경추 · 요추 MRI</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 정밀 종합검진 항목 포함</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20 6-11 11-5-5"/></svg> 영상의학 전문의 판독</li>
+        </ul>
+        <a href="#cta" class="btn btn-ghost">상담 예약</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ News ============ -->
+<section class="section" id="news">
+  <div class="wrap">
+    <div class="section-head reveal" style="display:flex;justify-content:space-between;align-items:flex-end;max-width:none;flex-wrap:wrap;gap:16px">
+      <div>
+        <span class="eyebrow">NEWS &amp; NOTICE</span>
+        <h2 style="margin-bottom:4px">병원소식</h2>
+        <p>여수제일병원의 공지사항과 건강정보, 이벤트 소식을 만나보세요.</p>
+      </div>
+      <a href="#" class="btn btn-ghost">전체보기 +</a>
+    </div>
+    <div class="news-grid">
+      <a href="#" class="ncard n1 reveal">
+        <div class="thumb">
+          <span class="cat">공지</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        </div>
+        <div class="nbody">
+          <h4>Philips Ingenia 3.0T MRI 도입 안내</h4>
+          <p>최신 디지털 MRI 도입으로 더욱 정밀하고 빠른 영상 검사를 제공합니다.</p>
+          <span class="date">2026.06.10</span>
+        </div>
+      </a>
+      <a href="#" class="ncard n2 reveal" data-d="1">
+        <div class="thumb">
+          <span class="cat">이벤트</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="nbody">
+          <h4>상반기 종합검진 사전예약 이벤트</h4>
+          <p>정밀 종합검진 사전 예약 고객 대상 특별 혜택을 진행합니다.</p>
+          <span class="date">2026.06.05</span>
+        </div>
+      </a>
+      <a href="#" class="ncard n3 reveal" data-d="2">
+        <div class="thumb">
+          <span class="cat">건강정보</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </div>
+        <div class="nbody">
+          <h4>환절기 척추·관절 건강관리 수칙</h4>
+          <p>일교차가 큰 시기, 허리·무릎 통증을 예방하는 생활 습관을 안내합니다.</p>
+          <span class="date">2026.05.28</span>
+        </div>
+      </a>
+      <a href="#" class="ncard n4 reveal" data-d="3">
+        <div class="thumb">
+          <span class="cat">공지</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <div class="nbody">
+          <h4>여름철 진료시간 및 휴진 안내</h4>
+          <p>외래 진료시간과 공휴일 응급실 운영에 대해 안내드립니다.</p>
+          <span class="date">2026.05.20</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Visit ============ -->
+<section class="section visit" id="visit">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">DIRECTIONS</span>
+      <h2>진료시간 · 오시는 길</h2>
+      <p>여수제일병원은 여수시 학동에 위치하고 있습니다. 방문 전 진료시간을 확인해 주세요.</p>
+    </div>
+    <div class="visit-grid">
+      <div class="info-list">
+        <div class="info-row reveal">
+          <span class="ir-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <div><b>주소</b><div class="v">전라남도 여수시 쌍봉로 70 (학동)</div><div class="s">우편번호 59677 · 의료법인 한마음의료재단</div></div>
+        </div>
+        <div class="info-row reveal" data-d="1">
+          <span class="ir-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span>
+          <div><b>대표전화</b><div class="v">061-689-8114</div><div class="s">응급실 061-689-8119 (24시간)</div></div>
+        </div>
+        <div class="info-row reveal" data-d="2">
+          <span class="ir-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+          <div><b>주차안내</b><div class="v">병원 부설주차장 운영</div><div class="s">외래·검진 방문 시 주차 할인 혜택 제공</div></div>
+        </div>
+        <div class="info-row reveal" data-d="3">
+          <span class="ir-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6v6a4 4 0 0 0 8 0V6M5 21h14M4 6h16"/></svg></span>
+          <div><b>대중교통</b><div class="v">시내버스 학동 정류장 인근</div><div class="s">여수시청 인근 · 자세한 노선은 전화 문의</div></div>
+        </div>
+      </div>
+
+      <div class="hours-card reveal" data-d="1">
+        <h3>외래 진료시간</h3>
+        <div class="sub">방문 전 진료과별 일정은 전화로 확인 부탁드립니다.</div>
+        <div class="hours-list">
+          <div class="hr"><span>평일 (월–금)</span><b>09:00 – 17:30</b></div>
+          <div class="hr"><span>토요일</span><b>09:00 – 13:00</b></div>
+          <div class="hr"><span>점심시간</span><b>13:00 – 14:00</b></div>
+          <div class="hr"><span>일요일 · 공휴일</span><b class="off">외래 휴진</b></div>
+        </div>
+        <div class="emergency">
+          <span class="eb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></span>
+          <div><b>응급실은 24시간 365일 운영</b><div class="num">061-689-8119</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA band ============ -->
+<section class="cta-band" id="cta">
+  <div class="wrap">
+    <div class="cta-inner">
+      <h2 class="reveal">진료가 필요하신가요?</h2>
+      <p class="reveal" data-d="1">전화 한 통이면 충분합니다. 전문 상담원이 친절하게 예약을 도와드립니다.</p>
+      <div class="hero-actions reveal" data-d="2">
+        <a href="tel:061-689-8114" class="btn btn-light btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+          예약문의 061-689-8114
+        </a>
+        <a href="#visit" class="btn btn-light btn-lg">진료시간 보기</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Footer ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand">
+          <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 8 3 4 7 4c2 0 3.5 1.2 5 3 1.5-1.8 3-3 5-3 4 0 6 4 4.5 8C19 16.65 12 21 12 21Z"/><path d="M3.5 12H8l1.5-3 2.5 6 1.5-3h4"/></svg></span>
+          <span class="bt"><b>여수제일병원</b><small>Yeosu Jeil Hospital</small></span>
+        </div>
+        <p class="fdesc">의료법인 한마음의료재단 여수제일병원은 정확한 진단과 따뜻한 치료로
+        여수 시민의 건강한 삶을 함께합니다.</p>
+      </div>
+      <div>
+        <h5>진료안내</h5>
+        <ul>
+          <li><a href="#departments">진료과 안내</a></li>
+          <li><a href="#departments">척추·관절센터</a></li>
+          <li><a href="#checkup">종합검진센터</a></li>
+          <li><a href="#equip">첨단 의료장비</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>이용안내</h5>
+        <ul>
+          <li><a href="#cta">진료예약</a></li>
+          <li><a href="#visit">진료시간</a></li>
+          <li><a href="#visit">오시는 길</a></li>
+          <li><a href="#news">공지사항</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>연락처</h5>
+        <ul>
+          <li><a href="tel:061-689-8114">대표 061-689-8114</a></li>
+          <li><a href="tel:061-689-8119">응급실 061-689-8119</a></li>
+          <li>전남 여수시 쌍봉로 70</li>
+          <li>평일 09:00–17:30</li>
+        </ul>
+      </div>
+    </div>
+    <div class="fbottom">
+      <div>© 2026 여수제일병원 (의료법인 한마음의료재단). All rights reserved.</div>
+      <div class="legal"><a href="#">개인정보처리방침</a><a href="#">이용약관</a><a href="#">비급여 진료비 안내</a></div>
+    </div>
+  </div>
+</footer>
+
+<button class="totop" id="totop" aria-label="맨 위로"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+
+<script>
+(function(){
+  // ===== Header scroll state =====
+  const header=document.getElementById('header');
+  const totop=document.getElementById('totop');
+  function onScroll(){
+    const y=window.scrollY;
+    header.classList.toggle('scrolled',y>10);
+    totop.classList.toggle('show',y>600);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  totop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+  // ===== Mobile menu =====
+  const mm=document.getElementById('mobileMenu');
+  document.getElementById('hamburger').addEventListener('click',()=>mm.classList.add('open'));
+  document.getElementById('mmClose').addEventListener('click',()=>mm.classList.remove('open'));
+  mm.addEventListener('click',e=>{if(e.target===mm||e.target.tagName==='A')mm.classList.remove('open');});
+
+  // ===== Scroll reveal =====
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}});
+  },{threshold:.14,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // ===== Headline word reveal (on load) =====
+  const tws=document.querySelectorAll('[data-tw]');
+  window.addEventListener('load',()=>{
+    tws.forEach((el,i)=>setTimeout(()=>el.classList.add('in'),120+i*140));
+  });
+  // fallback if load already fired
+  if(document.readyState==='complete')tws.forEach((el,i)=>setTimeout(()=>el.classList.add('in'),120+i*140));
+
+  // ===== Count up =====
+  const counted=new WeakSet();
+  const cio=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      if(!en.isIntersecting||counted.has(en.target))return;
+      counted.add(en.target);
+      const el=en.target;
+      const target=parseFloat(el.dataset.count);
+      const dec=parseInt(el.dataset.dec||'0',10);
+      const suffix=el.dataset.suffix||'';
+      const prefix=el.dataset.prefix||'';
+      const hasI=el.querySelector('i');
+      const iHTML=hasI?hasI.outerHTML:'';
+      const dur=1400;const t0=performance.now();
+      function tick(now){
+        const p=Math.min((now-t0)/dur,1);
+        const eased=1-Math.pow(1-p,3);
+        const val=(target*eased).toFixed(dec);
+        el.firstChild&&(el.childNodes[0].nodeValue=prefix+val+suffix);
+        if(p<1)requestAnimationFrame(tick);
+        else el.childNodes[0].nodeValue=prefix+target.toFixed(dec)+suffix;
+      }
+      requestAnimationFrame(tick);
+    });
+  },{threshold:.6});
+  document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+  // ===== Smooth anchor offset for sticky header =====
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const id=a.getAttribute('href');
+      if(id.length<2)return;
+      const t=document.querySelector(id);
+      if(!t)return;
+      e.preventDefault();
+      const y=t.getBoundingClientRect().top+window.scrollY-86;
+      window.scrollTo({top:y,behavior:'smooth'});
+    });
+  });
+})();
+</script>
+</body>
+</html>
