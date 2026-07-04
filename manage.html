@@ -261,6 +261,7 @@ const App = {
   switchTeam(v){
     if(v==='__add'){ this.renderTeamSel(); return this.addTeam(); }
     DB.cur=parseInt(v); localStorage.setItem('jagu_cur',DB.cur);
+    this.attendSession=null; this.tacticsSession=null; // 이전 팀의 세션 ID 잔존 방지
     this.reload(); seedIfEmpty(); this.renderTeamSel(); this.render();
   },
   addTeam(){
@@ -286,7 +287,7 @@ const App = {
   render(){
     ({home:renderHome,members:renderMembers,attend:renderAttend,tactics:renderTactics,dues:renderDues}[this.page])();
   },
-  closeSheet, openSheet,
+  closeSheet, // 오버레이 배경 클릭 핸들러에서 사용
 };
 
 /* ============== HOME ============== */
@@ -296,9 +297,10 @@ function renderHome(){
   const upcoming=sessions.filter(s=>s.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const last=sessions.find(s=>s.date<today());
 
-  // 출석률 (전체 세션 평균)
+  // 출석률 (전체 세션 평균) — 세션 1회 순회 집계 재사용
+  const am=attendMap();
   let attTot=0,attCnt=0;
-  D.sessions.forEach(s=>{const a=s.attend||{};m.forEach(p=>{if(a[p.id]){attCnt++;if(a[p.id]==='present'||a[p.id]==='late')attTot++;}});});
+  m.forEach(p=>{const e=am[p.id];if(e){attCnt+=e.tot;attTot+=e.att;}});
   const attRate=attCnt?Math.round(attTot/attCnt*100):0;
 
   // 회비 현황 (이번달)
@@ -326,8 +328,8 @@ function renderHome(){
             <div style="font-size:10px;opacity:.8">${weekday(upcoming.date)}</div>
           </div>
           <div style="flex:1">
-            <div style="font-weight:800;font-size:15px">${esc(upcoming.title||(upcoming.opponent?('vs '+upcoming.opponent):'정기 모임'))}</div>
-            <div class="mmeta">${upcoming.time?'🕖 '+upcoming.time+' · ':''}${upcoming.place?'📍 '+esc(upcoming.place):'장소 미정'}</div>
+            <div style="font-weight:800;font-size:15px">${esc(sessionTitle(upcoming))}</div>
+            <div class="mmeta">${upcoming.time?'🕖 '+esc(upcoming.time)+' · ':''}${upcoming.place?'📍 '+esc(upcoming.place):'장소 미정'}</div>
           </div>
           <button class="btn sm green" onclick="App.attendSession='${upcoming.id}';App.nav('attend')">출석체크</button>
         </div>`:`<div class="empty" style="padding:18px"><p>예정된 일정이 없습니다</p><button class="btn sm green mt8" onclick="openSession()">+ 일정 추가</button></div>`}
@@ -354,14 +356,13 @@ function renderHome(){
 
     <div class="panel">
       <div class="panel-title">⭐ 출석왕 TOP 5</div>
-      ${attendRankHTML(m)}
+      ${attendRankHTML(m,am)}
     </div>`;
 }
-function attendRankHTML(members){
+function attendRankHTML(members,am){
   const rows=members.map(p=>{
-    let t=0,c=0;
-    D.sessions.forEach(s=>{const st=(s.attend||{})[p.id];if(st){c++;if(st==='present'||st==='late')t++;}});
-    return {p,rate:c?t/c:0,cnt:t,total:c};
+    const e=am[p.id]||{att:0,tot:0};
+    return {p,rate:e.tot?e.att/e.tot:0,cnt:e.att,total:e.tot};
   }).filter(r=>r.total>0).sort((a,b)=>b.cnt-a.cnt||b.rate-a.rate).slice(0,5);
   if(!rows.length)return `<div class="muted tc" style="font-size:12px;padding:10px">출석 데이터가 아직 없어요</div>`;
   const medal=['🥇','🥈','🥉','4','5'];
@@ -383,15 +384,16 @@ function sessionLineHTML(s){
   }
   return `<div class="row" style="gap:10px">
     <div style="flex:1">
-      <div style="font-weight:700;font-size:14px">${esc(s.title||(s.opponent?('vs '+s.opponent):'정기 모임'))}</div>
+      <div style="font-weight:700;font-size:14px">${esc(sessionTitle(s))}</div>
       <div class="mmeta">${fmtDateK(s.date)} · 출석 ${present}명</div>
     </div>${score}</div>`;
 }
 
 /* ============== MEMBERS ============== */
 function renderMembers(){
-  const ms=[...D.members].sort((a,b)=>(a.active===false?1:0)-(b.active===false?1:0)||POS.indexOf(a.pos)-POS.indexOf(b.pos)||(a.num||99)-(b.num||99));
+  const ms=[...D.members].sort((a,b)=>(a.active===false?1:0)-(b.active===false?1:0)||POS.indexOf(a.pos)-POS.indexOf(b.pos)||(a.num??99)-(b.num??99));
   const byPos=p=>ms.filter(m=>m.pos===p);
+  const am=attendMap();
   document.getElementById('page-members').innerHTML=`
     <div class="row"><div><div class="page-title">선수단</div><div class="page-sub">${D.members.filter(m=>m.active!==false).length}명 활동 중</div></div>
       <button class="btn green sm" style="margin-left:auto" onclick="openMember()">+ 선수</button></div>
@@ -399,15 +401,15 @@ function renderMembers(){
       ${POS.map(p=>`<div class="stat"><div class="v">${byPos(p).filter(m=>m.active!==false).length}</div><div class="l">${posLabel(p)}</div></div>`).join('')}
     </div>
     ${ms.length?POS.map(p=>{const list=byPos(p);if(!list.length)return'';
-      return `<div class="list-hd">${posLabel(p)} (${list.length})</div><div class="panel" style="padding:6px 14px">${list.map(memberItemHTML).join('')}</div>`;
+      return `<div class="list-hd">${posLabel(p)} (${list.length})</div><div class="panel" style="padding:6px 14px">${list.map(x=>memberItemHTML(x,am)).join('')}</div>`;
     }).join(''):emptyHTML('👥','등록된 선수가 없습니다','첫 선수를 추가해보세요')}`;
 }
-function memberItemHTML(m){
+function memberItemHTML(m,am){
   const off=m.active===false;
-  let t=0,c=0;D.sessions.forEach(s=>{const st=(s.attend||{})[m.id];if(st){c++;if(st==='present'||st==='late')t++;}});
-  const rate=c?Math.round(t/c*100):null;
+  const e=am[m.id];
+  const rate=e&&e.tot?Math.round(e.att/e.tot*100):null;
   return `<div class="mitem" style="opacity:${off?.5:1}">
-    <div class="mavatar" style="background:${posColor(m.pos)}">${esc(m.name.slice(0,1))}${m.num?`<span class="num">${m.num}</span>`:''}</div>
+    ${avatarHTML(m)}
     <div style="min-width:0;flex:1">
       <div class="mname">${esc(m.name)} ${off?'<span class="badge b-off">탈퇴</span>':''}</div>
       <div class="mmeta">
@@ -459,6 +461,7 @@ function delMember(id){
   if(!confirm('이 선수를 삭제할까요? 출석·회비 기록도 함께 사라집니다.'))return;
   D.members=D.members.filter(x=>x.id!==id);
   delete D.dues[id];
+  D.txns=D.txns.filter(t=>t.mid!==id); // 자동 생성된 회비 입금도 함께 제거 (잔액 정합성)
   D.sessions.forEach(s=>{if(s.attend)delete s.attend[id];if(s.lineup&&s.lineup.slots)s.lineup.slots=s.lineup.slots.map(x=>x===id?null:x);});
   App.persist(); closeSheet(); renderMembers(); toast('삭제되었습니다');
 }
@@ -467,17 +470,17 @@ function delMember(id){
 function renderAttend(){
   const sessions=[...D.sessions].sort((a,b)=>b.date.localeCompare(a.date));
   let cur=App.attendSession?D.sessions.find(s=>s.id===App.attendSession):sessions[0];
-  if(!cur)App.attendSession=null;
+  if(!cur){App.attendSession=null;cur=sessions[0];} // stale ID면 최신 세션으로 폴백
   document.getElementById('page-attend').innerHTML=`
     <div class="row"><div><div class="page-title">출석 체크</div><div class="page-sub">경기·모임별 출결 관리</div></div>
       <button class="btn green sm" style="margin-left:auto" onclick="openSession()">+ 일정</button></div>
     ${sessions.length?`
       <div class="field" style="margin-bottom:14px">
         <select id="att-sel" onchange="App.attendSession=this.value;renderAttend()" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;background:#fff;font-weight:700">
-          ${sessions.map(s=>`<option value="${s.id}" ${cur&&s.id===cur.id?'selected':''}>${fmtDateK(s.date)} · ${esc(s.title||(s.opponent?('vs '+s.opponent):'정기 모임'))}</option>`).join('')}
+          ${sessions.map(s=>`<option value="${s.id}" ${cur&&s.id===cur.id?'selected':''}>${fmtDateK(s.date)} · ${esc(sessionTitle(s))}</option>`).join('')}
         </select>
       </div>
-      ${cur?attendPanelHTML(cur):''}
+      <div id="att-panel">${cur?attendPanelHTML(cur):''}</div>
     `:emptyHTML('📋','등록된 일정이 없습니다','경기나 모임 일정을 추가하세요')}`;
 }
 function attendPanelHTML(s){
@@ -487,8 +490,8 @@ function attendPanelHTML(s){
   m.forEach(p=>{const st=s.attend[p.id];if(st)cnt[st]++;else cnt.none++;});
   return `<div class="panel">
     <div class="row" style="margin-bottom:10px">
-      <div><div style="font-weight:800;font-size:15px">${esc(s.title||(s.opponent?('vs '+s.opponent):'정기 모임'))}</div>
-      <div class="mmeta">${fmtDateK(s.date)} ${s.time?'· '+s.time:''} ${s.place?'· 📍'+esc(s.place):''}</div></div>
+      <div><div style="font-weight:800;font-size:15px">${esc(sessionTitle(s))}</div>
+      <div class="mmeta"><span class="badge b-on">${esc(s.type||'정기')}</span> ${fmtDateK(s.date)} ${s.time?'· '+esc(s.time):''} ${s.place?'· 📍'+esc(s.place):''}</div></div>
       <button class="btn xs ghost" style="margin-left:auto" onclick="openSession('${s.id}')">수정</button>
     </div>
     <div class="stat-grid g4" style="margin-bottom:6px">
@@ -505,7 +508,7 @@ function attendPanelHTML(s){
     <div class="divider"></div>
     ${m.map(p=>{const st=s.attend[p.id]||'';
       return `<div class="att-row">
-        <div class="mavatar" style="width:34px;height:34px;font-size:13px;border-radius:9px;background:${posColor(p.pos)}">${esc(p.name.slice(0,1))}</div>
+        ${avatarHTML(p,34)}
         <div style="min-width:0;flex:1"><div class="att-name">${esc(p.name)}</div></div>
         <div class="att-toggle">
           ${Object.entries(STATUS).map(([k,v])=>`<button class="${st===k?'on '+v.c:''}" onclick="setAtt('${s.id}','${p.id}','${k}')">${v.l}</button>`).join('')}
@@ -514,14 +517,20 @@ function attendPanelHTML(s){
   </div>`;
 }
 function setAtt(sid,pid,st){
-  const s=D.sessions.find(x=>x.id===sid);s.attend=s.attend||{};
+  const s=D.sessions.find(x=>x.id===sid);if(!s)return;s.attend=s.attend||{};
   if(s.attend[pid]===st)delete s.attend[pid];else s.attend[pid]=st;
-  App.persist(); renderAttend();
+  App.persist(); refreshAttPanel(s);
 }
 function markAll(sid,st){
-  const s=D.sessions.find(x=>x.id===sid);s.attend=s.attend||{};
-  D.members.filter(x=>x.active!==false).forEach(p=>{if(st)s.attend[p.id]=st;else delete s.attend[p.id];});
-  App.persist(); renderAttend();
+  const s=D.sessions.find(x=>x.id===sid);if(!s)return;
+  if(st){s.attend=s.attend||{};D.members.filter(x=>x.active!==false).forEach(p=>s.attend[p.id]=st);}
+  else s.attend={}; // 초기화: 탈퇴 선수 기록까지 전부 삭제
+  App.persist(); refreshAttPanel(s);
+}
+/* 탭 한 번에 페이지 전체 대신 출석 패널만 다시 그림 */
+function refreshAttPanel(s){
+  const el=document.getElementById('att-panel');
+  if(el)el.innerHTML=attendPanelHTML(s);else renderAttend();
 }
 function openSession(id){
   const s=id?D.sessions.find(x=>x.id===id):{date:today(),time:'07:00',type:'정기'};
@@ -546,9 +555,13 @@ function openSession(id){
 function saveSession(id){
   const date=val('f-date'); if(!date)return toast('날짜를 입력하세요');
   const old=id?D.sessions.find(x=>x.id===id):null;
+  // 폼은 제목/상대팀을 한 입력으로 받으므로, 값이 그대로면 기존 title/opponent 구조 보존
+  const t=val('f-title').trim();
+  let title=t,opponent='';
+  if(old&&t===(old.title||old.opponent||'')){title=old.title||'';opponent=old.opponent||'';}
   const obj={
     id:id||uid(), type:segVal('seg-type')||'정기',
-    title:val('f-title').trim(), date, time:val('f-time'), place:val('f-place').trim(),
+    title, opponent, date, time:val('f-time'), place:val('f-place').trim(),
     gf:val('f-gf')!==''?parseInt(val('f-gf')):null,
     ga:val('f-ga')!==''?parseInt(val('f-ga')):null,
     attend:old?old.attend:{}, lineup:old?old.lineup:null,
@@ -569,6 +582,7 @@ function delSession(id){
 function renderTactics(){
   const sessions=[...D.sessions].sort((a,b)=>b.date.localeCompare(a.date));
   let cur=App.tacticsSession?D.sessions.find(s=>s.id===App.tacticsSession):sessions[0];
+  if(!cur){App.tacticsSession=null;cur=sessions[0];} // stale ID면 최신 세션으로 폴백
   if(cur&&!cur.lineup)cur.lineup={formation:'4-4-2',slots:FORMATIONS['4-4-2'].map(()=>null)};
   document.getElementById('page-tactics').innerHTML=`
     <div class="page-title">전술 보드</div>
@@ -577,7 +591,7 @@ function renderTactics(){
       <div class="field-row" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
         <div class="field" style="margin:0"><label>경기 선택</label>
           <select id="t-sel" onchange="App.tacticsSession=this.value;renderTactics()" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;background:#fff;font-weight:700">
-            ${sessions.map(s=>`<option value="${s.id}" ${cur&&s.id===cur.id?'selected':''}>${fmtDateK(s.date).slice(5)} ${esc((s.title||s.opponent||'정기').slice(0,8))}</option>`).join('')}
+            ${sessions.map(s=>`<option value="${s.id}" ${cur&&s.id===cur.id?'selected':''}>${fmtDateK(s.date)} ${esc(sessionTitle(s).slice(0,10))}</option>`).join('')}
           </select></div>
         <div class="field" style="margin:0"><label>포메이션</label>
           <select id="t-form" onchange="setFormation('${cur?cur.id:''}',this.value)" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;background:#fff;font-weight:700">
@@ -611,14 +625,22 @@ function pitchHTML(s){
   </div>
   <div class="list-hd">벤치 / 미배치 (${bench.length})</div>
   <div class="panel" style="padding:10px 14px">
-    ${bench.length?`<div style="display:flex;flex-wrap:wrap;gap:7px">${bench.map(p=>`<span class="chip" style="background:${posBg(p.pos)};border-color:transparent;color:${posColor(p.pos)}">${p.num?p.num+' ':''}${esc(p.name)}</span>`).join('')}</div>`:'<div class="muted tc" style="font-size:12px">모든 선수가 배치되었습니다</div>'}
+    ${bench.length?`<div style="display:flex;flex-wrap:wrap;gap:7px">${bench.map(p=>`<span class="chip" style="background:${posBg(p.pos)};border-color:transparent;color:${posColor(p.pos)}">${p.num!=null?p.num+' ':''}${esc(p.name)}</span>`).join('')}</div>`:'<div class="muted tc" style="font-size:12px">모든 선수가 배치되었습니다</div>'}
   </div>`;
 }
 function setFormation(sid,f){
-  const s=D.sessions.find(x=>x.id===sid);
+  const s=D.sessions.find(x=>x.id===sid); if(!s||!FORMATIONS[f])return;
+  // 인덱스가 아니라 역할(GK/DF/MF/FW) 기준으로 기존 배치를 이관
+  const oldForm=s.lineup?FORMATIONS[s.lineup.formation]||[]:[];
   const oldSlots=s.lineup?s.lineup.slots:[];
-  const newLen=FORMATIONS[f].length;
-  const slots=Array.from({length:newLen},(_,i)=>oldSlots[i]||null);
+  const byRole={};
+  oldSlots.forEach((pid,i)=>{if(pid){const r=oldForm[i]?oldForm[i][0]:'MF';(byRole[r]=byRole[r]||[]).push(pid);}});
+  const newForm=FORMATIONS[f];
+  const slots=newForm.map(([r])=>{const q=byRole[r];return q&&q.length?q.shift():null;});
+  // 같은 역할 자리가 부족한 선수는 남는 필드 슬롯(GK 제외)에 순서대로 배치
+  const rest=Object.values(byRole).flat();
+  for(let i=0;i<slots.length&&rest.length;i++)if(!slots[i]&&newForm[i][0]!=='GK')slots[i]=rest.shift();
+  if(rest.length)toast(rest.length+'명이 벤치로 이동했습니다');
   s.lineup={formation:f,slots};
   App.persist(); renderTactics();
 }
@@ -638,7 +660,7 @@ function pickSlot(sid,idx){
     ${cur?`<button class="btn ghost full mb8" style="color:var(--red)" onclick="assignSlot('${sid}',${idx},'')">이 자리 비우기</button>`:''}
     <div style="max-height:50vh;overflow-y:auto">
     ${avail.length?avail.map(p=>`<div class="pick-item" onclick="assignSlot('${sid}',${idx},'${p.id}')">
-        <div class="mavatar" style="width:36px;height:36px;font-size:13px;background:${posColor(p.pos)}">${esc(p.name.slice(0,1))}${p.num?`<span class="num">${p.num}</span>`:''}</div>
+        ${avatarHTML(p,36)}
         <div><div class="mname" style="font-size:14px">${esc(p.name)} ${p.id===cur?'<span class="badge b-on">현재</span>':''}</div>
         <div class="mmeta"><span class="badge b-pos-${p.pos}">${p.pos}</span></div></div>
       </div>`).join(''):'<div class="muted tc" style="padding:18px">배치 가능한 선수가 없습니다</div>'}
@@ -656,9 +678,10 @@ function assignSlot(sid,idx,pid){
 function renderDues(){
   const m=D.members.filter(x=>x.active!==false);
   const mth=App.duesMonth;
+  const mLabel=parseInt(mth.slice(5))+'월';
   const paidList=m.filter(p=>D.dues[p.id]&&D.dues[p.id][mth]);
-  const collected=paidList.length*D.duesAmount;
-  const expected=m.length*D.duesAmount;
+  // 수금액은 인원수×현재 회비가 아니라 해당 월의 실제 입금 기록 합계
+  const collected=D.txns.filter(t=>t.auto&&t.mth===mth).reduce((s,t)=>s+t.amount,0);
   const balance=teamBalance();
   const txns=[...D.txns].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
   document.getElementById('page-dues').innerHTML=`
@@ -667,8 +690,8 @@ function renderDues(){
 
     <div class="stat-grid g3">
       <div class="stat"><div class="v" style="color:var(--green)">${won(balance)}</div><div class="l">현재 잔액</div></div>
-      <div class="stat"><div class="v">${paidList.length}<small>/${m.length}</small></div><div class="l">이번달 납부</div></div>
-      <div class="stat"><div class="v">${won(collected)}</div><div class="l">이번달 수금</div></div>
+      <div class="stat"><div class="v">${paidList.length}<small>/${m.length}</small></div><div class="l">${mLabel} 납부</div></div>
+      <div class="stat"><div class="v">${won(collected)}</div><div class="l">${mLabel} 수금</div></div>
     </div>
 
     <div class="panel">
@@ -685,7 +708,7 @@ function renderDues(){
       ${m.length?m.sort((a,b)=>POS.indexOf(a.pos)-POS.indexOf(b.pos)).map(p=>{
         const paid=D.dues[p.id]&&D.dues[p.id][mth];
         return `<div class="dues-row">
-          <div class="mavatar" style="width:34px;height:34px;font-size:13px;border-radius:9px;background:${posColor(p.pos)}">${esc(p.name.slice(0,1))}</div>
+          ${avatarHTML(p,34)}
           <div><div class="mname" style="font-size:14px">${esc(p.name)}</div>
           <div class="mmeta">${paid?'<span style="color:var(--green)">납부 완료</span>':'<span style="color:var(--red)">미납</span>'}</div></div>
           <div class="pay-toggle ${paid?'paid':''}" onclick="togglePay('${p.id}','${mth}')"><div class="knob">${paid?'✓':''}</div></div>
@@ -705,6 +728,7 @@ function renderDues(){
     </div>`;
 }
 function togglePay(pid,mth){
+  const mem=D.members.find(x=>x.id===pid); if(!mem)return;
   D.dues[pid]=D.dues[pid]||{};
   if(D.dues[pid][mth]){
     delete D.dues[pid][mth];
@@ -712,7 +736,7 @@ function togglePay(pid,mth){
     D.txns=D.txns.filter(t=>!(t.auto&&t.mid===pid&&t.mth===mth));
   }else{
     D.dues[pid][mth]=true;
-    D.txns.push({id:uid(),type:'in',amount:D.duesAmount,date:today(),desc:memberName(pid)+' '+parseInt(mth.slice(5))+'월 회비',auto:true,mid:pid,mth});
+    D.txns.push(duesTxn(mem,mth));
   }
   App.persist(); renderDues();
 }
@@ -721,7 +745,7 @@ function allPaid(mth){
     D.dues[p.id]=D.dues[p.id]||{};
     if(!D.dues[p.id][mth]){
       D.dues[p.id][mth]=true;
-      D.txns.push({id:uid(),type:'in',amount:D.duesAmount,date:today(),desc:p.name+' '+parseInt(mth.slice(5))+'월 회비',auto:true,mid:p.id,mth});
+      D.txns.push(duesTxn(p,mth));
     }
   });
   App.persist(); renderDues(); toast('전체 납부 처리되었습니다');
@@ -773,20 +797,29 @@ function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt
 function today(){return ym(new Date())+'-'+String(new Date().getDate()).padStart(2,'0');}
 function ym(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function shiftMonth(m,delta){const[y,mo]=m.split('-').map(Number);const d=new Date(y,mo-1+delta,1);return ym(d);}
-function weekday(ds){return ['일','월','화','수','목','금','토'][new Date(ds).getDay()];}
-function fmtDateK(d){const dt=typeof d==='string'?new Date(d):d;return `${dt.getMonth()+1}/${dt.getDate()}(${['일','월','화','수','목','금','토'][dt.getDay()]})`;}
+/* 'YYYY-MM-DD'는 로컬 자정으로 파싱 — new Date(문자열)의 UTC 해석으로 인한 하루 밀림 방지 */
+function pDate(ds){const[y,m,d]=String(ds).split('-').map(Number);return new Date(y,m-1,d);}
+function weekday(ds){return ['일','월','화','수','목','금','토'][pDate(ds).getDay()];}
+function fmtDateK(d){const dt=typeof d==='string'?pDate(d):d;return `${dt.getMonth()+1}/${dt.getDate()}(${['일','월','화','수','목','금','토'][dt.getDay()]})`;}
+function sessionTitle(s){return s.title||(s.opponent?('vs '+s.opponent):'정기 모임');}
+/* 전체 세션 1회 순회로 선수별 {att(출석+지각), tot(기록수)} 집계 */
+function attendMap(){const map={};D.sessions.forEach(s=>{const a=s.attend||{};for(const pid in a){const e=map[pid]||(map[pid]={att:0,tot:0});e.tot++;if(a[pid]==='present'||a[pid]==='late')e.att++;}});return map;}
+function avatarHTML(m,size){size=size||40;const fs=size>=40?15:13,r=size>=40?11:9;
+  return `<div class="mavatar" style="width:${size}px;height:${size}px;font-size:${fs}px;border-radius:${r}px;background:${posColor(m.pos)}">${esc(m.name.slice(0,1))}${m.num!=null?`<span class="num">${m.num}</span>`:''}</div>`;}
+function duesTxn(m,mth){return {id:uid(),type:'in',amount:D.duesAmount,date:today(),desc:m.name+' '+parseInt(mth.slice(5))+'월 회비',auto:true,mid:m.id,mth};}
 function won(n){return (n<0?'-':'')+'₩'+Math.abs(n).toLocaleString();}
 function posLabel(p){return {GK:'골키퍼',DF:'수비수',MF:'미드필더',FW:'공격수'}[p]||p;}
 function posColor(p){return {GK:'#BA7517',DF:'#185FA5',MF:'#1D9E75',FW:'#D85A30'}[p]||'#1a3a1a';}
 function posBg(p){return {GK:'#fdf2e0',DF:'#e7f0fb',MF:'#e6f5ee',FW:'#fdeee4'}[p]||'#eee';}
-function memberName(id){const m=D.members.find(x=>x.id===id);return m?m.name:'';}
 function emptyHTML(ic,t,s){return `<div class="empty"><div class="e-ic">${ic}</div><p style="font-weight:700;color:var(--text)">${t}</p><p>${s}</p></div>`;}
 let toastT;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800);}
 
 /* ============== Seed (데모 데이터) ============== */
 function seedIfEmpty(){
-  if(D.members.length||D.sessions.length||D.txns.length)return;
+  // 데이터가 이미 있거나 한 번 시드된 적이 있으면 재주입하지 않음 (지운 데모가 되살아나는 것 방지)
+  if(D.members.length||D.sessions.length||D.txns.length){localStorage.setItem('jagu_seeded','1');return;}
+  if(localStorage.getItem('jagu_seeded'))return;
   if(DB.cur!==0)return; // 첫 팀에만 샘플
   const roster=[['김도현','GK',1],['이정훈','DF',4],['박상민','DF',5],['최우진','DF',2],['정태양','DF',3],
     ['강민수','MF',8],['윤재호','MF',6],['임현우','MF',10],['한승우','MF',7],['오세훈','FW',9],['신동민','FW',11],['배준영','FW',17],['조성하','MF',14]];
@@ -803,9 +836,10 @@ function seedIfEmpty(){
   D.sessions.push(mk(3,'일요 정기전','',null,null));
   // 이번달 회비 일부 납부
   const mth=ym(new Date());
-  D.members.slice(0,9).forEach(m=>{D.dues[m.id]={[mth]:true};D.txns.push({id:uid(),type:'in',amount:30000,date:today(),desc:m.name+' '+parseInt(mth.slice(5))+'월 회비',auto:true,mid:m.id,mth});});
+  D.members.slice(0,9).forEach(m=>{D.dues[m.id]={[mth]:true};D.txns.push(duesTxn(m,mth));});
   D.txns.push({id:uid(),type:'out',amount:120000,date:today(),desc:'구장 대관료 (4주)'});
   D.txns.push({id:uid(),type:'out',amount:85000,date:today(),desc:'음료/간식'});
+  localStorage.setItem('jagu_seeded','1');
   App.persist();
 }
 
