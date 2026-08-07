@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상승 2파 스크리너 — 스탯허브</title>
+<style>
+:root{--bg:#f4f3ef;--bg2:#fff;--border:#e4e2da;--text:#1a1a18;--muted:#888780;--green:#3B6D11;--teal:#1D9E75;--gold:#BA7517;--gold2:#EF9F27;--red:#D85A30;--red2:#A32D2D;--blue:#185FA5;--blue2:#378ADD;--navy:#14263e;--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);min-height:100vh;}
+.nav{display:flex;align-items:center;position:sticky;top:0;z-index:200;background:var(--navy);box-shadow:0 2px 12px rgba(0,0,0,.25);flex-wrap:wrap;}
+.nav-logo{font-size:15px;font-weight:700;padding:13px 18px;color:#9fc5f0;white-space:nowrap;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;padding-right:16px;}
+.nav-date{font-size:11px;color:#9fc5f0;opacity:.85;}
+.nav-link{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;text-decoration:none;}
+.nav-link:hover{background:rgba(255,255,255,.2);}
+.page{padding:20px 18px;max-width:1100px;margin:0 auto;}
+.hero{margin-bottom:16px;}
+.hero h1{font-size:20px;font-weight:700;}
+.hero p{font-size:12px;color:var(--muted);margin-top:3px;}
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;}
+.s-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;text-align:center;}
+.s-label{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.s-val{font-size:20px;font-weight:700;}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;}
+.panel-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:5px;}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.crit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.crit{display:flex;gap:8px;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:11px;}
+.crit b{display:block;font-size:11px;}
+.crit span{font-size:10px;color:var(--muted);}
+.crit-num{width:18px;height:18px;border-radius:50%;background:var(--navy);color:#9fc5f0;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.tier-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.tier-chip{font-size:10px;font-weight:700;padding:5px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg);}
+.sec-head{display:flex;align-items:center;gap:8px;margin:22px 0 10px;}
+.sec-head h2{font-size:15px;font-weight:700;}
+.sec-count{font-size:11px;font-weight:700;color:#fff;border-radius:12px;padding:2px 9px;}
+.sec-desc{font-size:11px;color:var(--muted);}
+.stock-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;}
+.stock-card.hl{border-color:var(--gold2);box-shadow:0 2px 14px rgba(239,159,39,.15);}
+.sc-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.sc-rank{font-size:10px;font-weight:700;color:#fff;background:var(--navy);border-radius:12px;padding:3px 9px;white-space:nowrap;}
+.sc-grade{font-size:10px;font-weight:700;border-radius:12px;padding:3px 9px;white-space:nowrap;}
+.sc-name{font-size:16px;font-weight:700;}
+.sc-code{font-size:11px;color:var(--muted);}
+.sc-price{margin-left:auto;text-align:right;}
+.sc-price .p{font-size:19px;font-weight:700;}
+.sc-price .d{font-size:11px;font-weight:700;}
+.sc-body{display:grid;grid-template-columns:1fr 330px;}
+.sc-left{padding:14px 16px;border-right:1px solid var(--border);}
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.metric{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+.metric .l{font-size:9px;color:var(--muted);margin-bottom:2px;}
+.metric .v{font-size:13px;font-weight:700;}
+.metric .s{font-size:9px;color:var(--muted);margin-top:1px;}
+.ma-line{font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.ma-badge{font-size:9px;font-weight:700;color:#fff;background:var(--teal);border-radius:10px;padding:2px 8px;}
+.ma-badge.no{background:var(--muted);}
+.read-box{font-size:12px;line-height:1.65;background:var(--bg);border-left:3px solid var(--navy);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:12px;}
+.check-list{display:flex;flex-direction:column;gap:4px;}
+.check-row{display:flex;align-items:baseline;gap:7px;font-size:11px;padding:4px 2px;border-bottom:1px dashed var(--border);}
+.check-row:last-child{border-bottom:none;}
+.ck-num{font-size:9px;color:var(--muted);min-width:12px;}
+.ck-mark{font-weight:700;min-width:14px;}
+.ck-mark.ok{color:var(--teal);}
+.ck-mark.half{color:var(--gold);}
+.ck-mark.no{color:var(--red2);}
+.ck-label{font-weight:600;}
+.ck-note{color:var(--muted);font-size:10px;margin-left:auto;text-align:right;}
+.sc-right{padding:14px 16px;background:#fbfaf7;}
+.lv-title{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.lv-row{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:8px;margin-bottom:4px;font-size:11px;border:1px solid transparent;}
+.lv-label{flex:1;}
+.lv-price{font-weight:700;font-size:12px;white-space:nowrap;}
+.lv-note{font-size:9px;opacity:.75;display:block;}
+.lv-target{background:#FBF3E4;border-color:#f0dcb4;color:var(--gold);}
+.lv-resist{background:#FCEEE8;border-color:#f5cdbd;color:var(--red);}
+.lv-confirm{background:#FCE9E9;border-color:#f2c3c3;color:var(--red2);}
+.lv-current{background:var(--navy);color:#fff;}
+.lv-interest{background:#E8F5EF;border-color:#bfe3d3;color:var(--teal);}
+.lv-warn{background:#FDF3E8;border-color:#f3d9b6;color:#8a5a10;}
+.lv-invalid{background:#E9F1FA;border-color:#c2d8ef;color:var(--blue);}
+.signal-bar{padding:10px 16px;border-top:1px solid var(--border);background:#FBF3E4;font-size:12px;font-weight:600;color:#6b4a0e;}
+.mini-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:13px 16px;margin-bottom:10px;}
+.mini-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px;}
+.mini-head .sc-name{font-size:14px;}
+.mini-metrics{font-size:11px;color:var(--muted);margin-left:auto;}
+.reason-list{font-size:11px;color:var(--muted);line-height:1.7;}
+.reason-list li{margin-left:16px;}
+.mini-read{font-size:11px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--border);line-height:1.6;}
+.footer{margin-top:26px;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--muted);line-height:1.8;}
+.footer code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:10px;}
+.up{color:var(--red);}
+.down{color:var(--blue);}
+@media(max-width:760px){
+  .sc-body{grid-template-columns:1fr;}
+  .sc-left{border-right:none;border-bottom:1px solid var(--border);}
+  .crit-grid{grid-template-columns:1fr;}
+  .stat-row{grid-template-columns:repeat(2,1fr);}
+  .metric-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">📈 상승 2파 스크리너</div>
+  <div class="nav-right">
+    <span class="nav-date" id="nav-date">—</span>
+    <a class="nav-link" href="index.html">🏆 스탯허브</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <h1>상승 2파 준비형 선별 리포트</h1>
+    <p>이미 상승 추세가 검증된 종목 중, 건전한 조정을 마치고 재상승을 준비하는 종목만 선별합니다.
+    바닥 반전주와 이미 급등한 추격주는 별도 분리합니다.</p>
+  </div>
+
+  <div class="stat-row" id="summary"></div>
+
+  <div class="panel">
+    <div class="panel-title"><span class="dot" style="background:var(--navy)"></span>선별 기준 6가지</div>
+    <div class="crit-grid">
+      <div class="crit"><div class="crit-num">1</div><div><b>정배열</b><span>20일선 &gt; 60일선 &gt; 120일선, 20일선 상승 중</span></div></div>
+      <div class="crit"><div class="crit-num">2</div><div><b>건전한 조정</b><span>고점 대비 약 5~15% 조정</span></div></div>
+      <div class="crit"><div class="crit-num">3</div><div><b>거래량 감소</b><span>조정 구간 거래량이 이전 평균의 80% 이하</span></div></div>
+      <div class="crit"><div class="crit-num">4</div><div><b>지지 확인</b><span>20일선 또는 직전 돌파 가격에서 지지·회복</span></div></div>
+      <div class="crit"><div class="crit-num">5</div><div><b>과열 해소</b><span>RSI 45~60 구간</span></div></div>
+      <div class="crit"><div class="crit-num">6</div><div><b>반등 트리거</b><span>양봉 전환 또는 단기 고점 돌파 직전</span></div></div>
+    </div>
+    <div class="tier-legend">
+      <span class="tier-chip" style="color:var(--green)">● 조정 완료·재상승 준비</span>
+      <span class="tier-chip" style="color:var(--red)">● 재상승 당일 확인</span>
+      <span class="tier-chip" style="color:var(--gold)">● 아직 조정 중·대기</span>
+      <span class="tier-chip" style="color:var(--muted)">● 별도 분리(바닥 반전형·돌파 추격형)</span>
+    </div>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="footer">
+    <div><b>데이터 갱신</b> — <code>python3 screener/wave2_screener.py --live --top 120 --update-html wave2.html</code> (pykrx 필요: <code>pip install pykrx</code>)</div>
+    <div>오프라인 분석: <code>python3 screener/wave2_screener.py --csv 일봉.csv --name 종목명 --code 코드</code> · 자세한 기준은 <code>screener/README.md</code></div>
+    <div style="margin-top:6px">※ 본 리포트는 투자 판단 참고용 자료이며 특정 종목의 매수·매도 권유가 아닙니다. 투자의 최종 판단과 책임은 투자자 본인에게 있습니다.</div>
+  </div>
+</div>
+
+<script>
+/*WAVE2_DATA_START*/
+const WAVE2_DATA = {
+  "asof": "2026-08-07",
+  "universe": {"scanned": 119, "label": "유동성 상위 상장주 119개"},
+  "generated": false,
+  "tiers": {
+    "ready": [
+      {
+        "rank": "1순위", "grade": "A급 재상승 준비형",
+        "name": "KB금융", "code": "105560", "close": 175800,
+        "ma20": 173235, "ma60": 163270, "ma120": 159347, "aligned": true,
+        "pullback_high": 194500, "dd": -0.096, "ret60": 0.080, "rsi": 52.7,
+        "contraction": 0.59, "today_vol_ratio": 0.57,
+        "read": "상승 추세와 정배열이 유지된 상태에서 고점 대비 약 10% 조정했고, 조정 거래량도 절반 가까이 감소했습니다. 오늘 저가 169,200원에서 반등해 20일선을 회복하며 장중 고가권(175,800원)으로 올라와, 재상승 준비 형태가 가장 좋습니다.",
+        "signal": "완성 신호: 176,900원 거래량 동반 돌파 — 오늘 반등 거래량은 20일 평균의 57%로 아직 부족, 거래량 확인이 최종 조건",
+        "checklist": [
+          {"k": 1, "ok": true,  "label": "정배열·20일선 상승", "note": "20일 173,235 / 60일 163,270 / 120일 159,347"},
+          {"k": 2, "ok": true,  "label": "고점 대비 5~15% 조정", "note": "20일 고점 194,500 대비 -9.6%"},
+          {"k": 3, "ok": true,  "label": "조정 거래량 감소", "note": "최근 5일 = 이전 평균의 59%"},
+          {"k": 4, "ok": true,  "label": "20일선 지지·회복", "note": "저가 169,200 → 20일선 회복"},
+          {"k": 5, "ok": true,  "label": "RSI 45~60", "note": "RSI 52.7"},
+          {"k": 6, "ok": true,  "label": "양봉 전환·돌파 직전", "note": "장중 고가 부근 마감"}
+        ],
+        "levels": [
+          {"type": "target",  "label": "핵심 목표·전고점", "price": 194500},
+          {"type": "resist",  "label": "1차 저항", "price": 182000, "note": "전후"},
+          {"type": "confirm", "label": "재상승 확인(돌파)", "price": 176900, "note": "거래량 동반 필수"},
+          {"type": "current", "label": "현재가", "price": 175800},
+          {"type": "interest","label": "관심 구간", "lo": 172500, "hi": 175000},
+          {"type": "warn",    "label": "추세 경고(종가 이탈)", "price": 169000},
+          {"type": "invalid", "label": "상승 추세 무효화(60일선 이탈)", "price": 163000, "note": "163,000원대"}
+        ]
+      }
+    ],
+    "ignited": [
+      {
+        "rank": "2순위", "grade": "A급 재상승 시동형",
+        "name": "신한지주", "code": "055550", "close": 110000,
+        "ma20": 104270, "ma60": 100433, "ma120": 98280, "aligned": true,
+        "pullback_high": 113300, "dd": -0.029, "ret60": 0.105, "rsi": 58.6,
+        "contraction": 0.74, "today_vol_ratio": 1.12,
+        "read": "완전 정배열 상승 추세에서 거래량을 줄이며 조정을 마친 뒤, 오늘 거래량이 다시 증가(20일 평균의 1.12배)하고 있습니다. 오늘 고가 110,300원, 현재 110,000원으로 고가권을 유지 — 재상승 준비보다는 이미 재상승 시동이 걸린 형태입니다.",
+        "signal": "핵심: 전고점 113,300원을 거래량과 함께 넘는지 — 현재가에서 전고점까지 거리가 짧아 돌파 시 새로운 상승 파동 가능",
+        "checklist": [
+          {"k": 1, "ok": true,   "label": "정배열·20일선 상승", "note": "20일 104,270 / 60일 100,433 / 120일 98,280"},
+          {"k": 2, "ok": "half", "label": "고점 대비 5~15% 조정", "note": "-2.9% — 조정 얕음, 이미 회복 단계"},
+          {"k": 3, "ok": true,   "label": "조정 거래량 감소", "note": "조정 구간 = 이전 평균의 74%"},
+          {"k": 4, "ok": true,   "label": "20일선 지지·회복", "note": "20일선 위 +5.5% 유지"},
+          {"k": 5, "ok": true,   "label": "RSI 45~60", "note": "RSI 58.6"},
+          {"k": 6, "ok": true,   "label": "양봉 전환·돌파 직전", "note": "오늘 거래량 1.12배·고가권 유지"}
+        ],
+        "levels": [
+          {"type": "target",  "label": "1차 목표·전고점", "price": 113300, "note": "돌파 시 새로운 상승 파동"},
+          {"type": "confirm", "label": "재상승 확인(돌파·안착)", "price": 110300},
+          {"type": "current", "label": "현재가", "price": 110000},
+          {"type": "interest","label": "눌림 관심 구간", "lo": 107000, "hi": 108500},
+          {"type": "warn",    "label": "단기 경고(이탈 주의)", "price": 105500},
+          {"type": "invalid", "label": "추세 훼손(20일선 종가 이탈)", "price": 104000, "note": "104,000원대"}
+        ]
+      }
+    ],
+    "wait": [
+      {
+        "rank": "3순위 관찰", "grade": "B급 안정화 대기형",
+        "name": "파마리서치", "code": "214450", "close": 378500,
+        "ma20": 350075, "ma60": 322683, "ma120": 321108, "aligned": true,
+        "pullback_high": 400500, "dd": -0.055, "ret60": 0.203, "rsi": 61.0,
+        "today_vol_ratio": 3.19,
+        "read": "중기 상승 추세와 정배열은 매우 좋지만, 오늘 변동 범위(333,000~410,000원)와 거래량(20일 평균의 3.19배)이 너무 큽니다. 일반적인 건전한 조정보다는 수급 충돌이 큰 변동성 구간 — 지금 즉시 진입 후보가 아닙니다.",
+        "signal": "재후보 조건: 365,000~370,000원 지지 + 거래량 감소 확인 → 이후 385,000원 재돌파 시 다시 후보",
+        "checklist": [
+          {"k": 1, "ok": true,   "label": "정배열·20일선 상승", "note": "20일 350,075 / 60일 322,683 / 120일 321,108"},
+          {"k": 2, "ok": true,   "label": "고점 대비 5~15% 조정", "note": "고점 400,500 대비 -5.5%"},
+          {"k": 3, "ok": false,  "label": "조정 거래량 감소", "note": "오늘 거래량 3.19배 — 수급 충돌"},
+          {"k": 4, "ok": "half", "label": "20일선 지지·회복", "note": "20일선 위 +8.1% 이격 과다"},
+          {"k": 5, "ok": false,  "label": "RSI 45~60", "note": "RSI 61 — 과열 미해소"},
+          {"k": 6, "ok": "half", "label": "양봉 전환·돌파 직전", "note": "변동 폭 과대(333,000~410,000)"}
+        ],
+        "levels": [
+          {"type": "target",  "label": "핵심 저항·전고점권", "lo": 400500, "hi": 410000},
+          {"type": "confirm", "label": "재돌파 확인 시 후보 복귀", "price": 385000},
+          {"type": "current", "label": "현재가", "price": 378500},
+          {"type": "interest","label": "지지 확인 필요 구간", "lo": 365000, "hi": 370000, "note": "지지 + 거래량 감소 필요"},
+          {"type": "invalid", "label": "추세 재점검(20일선 이탈)", "price": 350000, "note": "350,000원대"}
+        ]
+      },
+      {
+        "name": "뉴파워프라즈마", "code": "144960", "dd": -0.104, "aligned": true,
+        "reasons": ["오늘 종가가 장중 저가 부근 — 반등 트리거 부재", "조정 거래량이 충분히 감소하지 않음"],
+        "read": "정배열은 유지, 전고점 대비 약 -10.4%로 건전한 조정은 진행 중이지만 재상승 준비는 아직 미완성입니다."
+      }
+    ],
+    "excluded": [
+      {
+        "name": "셀트리온", "code": "068270", "rsi": 65.5,
+        "reasons": ["아직 완전한 정배열이 아님(20·60일선만 상승)", "전고점을 이미 장중 돌파 — 눌림 매수형이 아닌 돌파 추격형", "RSI 65.5로 과열 접근"],
+        "read": "눌림 매수형이 아니라 돌파 추격형에 가까워 이번 선별 기준과는 다릅니다. 돌파 추격 전략은 별도로 분리해 관리합니다."
+      }
+    ]
+  }
+};
+/*WAVE2_DATA_END*/
+
+const TIERS = [
+  {key: "ready",    title: "조정 완료·재상승 준비", color: "var(--green)", bg: "#3B6D11",
+   desc: "6개 기준 모두 충족 — 눌림 매수 관심"},
+  {key: "ignited",  title: "재상승 당일 확인", color: "var(--red)", bg: "#D85A30",
+   desc: "조정 마무리 후 당일 거래량 증가·고가권 유지"},
+  {key: "wait",     title: "아직 조정 중·대기", color: "var(--gold)", bg: "#BA7517",
+   desc: "추세는 유지, 일부 기준 미충족 — 조건 충족 시 후보 복귀"},
+  {key: "excluded", title: "별도 분리", color: "var(--muted)", bg: "#888780",
+   desc: "바닥 반전형·돌파 추격형·과열 — 이번 선별 대상 아님"}
+];
+
+const fmt = n => n == null ? "—" : Math.round(n).toLocaleString("ko-KR");
+const pct = (x, digits = 1) => x == null ? "—" : (x > 0 ? "+" : "") + (x * 100).toFixed(digits) + "%";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function markOf(ok) {
+  if (ok === true) return ['ok', '✓'];
+  if (ok === false) return ['no', '✗'];
+  return ['half', '△'];
+}
+
+function levelRow(lv) {
+  const price = "price" in lv ? fmt(lv.price) + "원" : fmt(lv.lo) + "~" + fmt(lv.hi) + "원";
+  const note = lv.note ? `<span class="lv-note">${esc(lv.note)}</span>` : "";
+  return `<div class="lv-row lv-${esc(lv.type)}"><span class="lv-label">${esc(lv.label)}${note}</span><span class="lv-price">${price}</span></div>`;
+}
+
+function metricCells(s) {
+  const cells = [];
+  const add = (l, v, sub) => cells.push(`<div class="metric"><div class="l">${l}</div><div class="v">${v}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div>`);
+  if (s.pullback_high != null) add("전고점(20일)", fmt(s.pullback_high), `고점 대비 <b class="down">${pct(s.dd)}</b>`);
+  if (s.rsi != null) add("RSI(14)", s.rsi.toFixed(1), "기준 45~60");
+  if (s.contraction != null) add("조정 거래량", Math.round(s.contraction * 100) + "%", "이전 평균 대비");
+  if (s.today_vol_ratio != null) add("오늘 거래량", s.today_vol_ratio.toFixed(2) + "배", "20일 평균 대비");
+  if (s.ret60 != null) add("60거래일 수익률", `<span class="${s.ret60 >= 0 ? "up" : "down"}">${pct(s.ret60)}</span>`);
+  if (s.score) add("준비도 점수", s.score.toFixed(1), "0~100");
+  return cells.join("");
+}
+
+function fullCard(s, tier) {
+  const ddCls = s.dd >= 0 ? "up" : "down";
+  const checklist = (s.checklist || []).map(c => {
+    const [cls, mark] = markOf(c.ok);
+    return `<div class="check-row"><span class="ck-num">${c.k}</span><span class="ck-mark ${cls}">${mark}</span><span class="ck-label">${esc(c.label)}</span><span class="ck-note">${esc(c.note || "")}</span></div>`;
+  }).join("");
+  const maLine = s.ma20 ? `<div class="ma-line"><span class="ma-badge${s.aligned === false ? " no" : ""}">${s.aligned === false ? "정배열 미완성" : "정배열"}</span>
+      <span>20일 <b>${fmt(s.ma20)}</b></span><span>60일 <b>${fmt(s.ma60)}</b></span><span>120일 <b>${fmt(s.ma120)}</b></span></div>` : "";
+  const reasons = (s.reasons || []).length && tier.key === "wait"
+    ? `<ul class="reason-list">${s.reasons.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : "";
+  return `<div class="stock-card${tier.key === "ready" ? " hl" : ""}">
+    <div class="sc-head">
+      ${s.rank ? `<span class="sc-rank">${esc(s.rank)}</span>` : ""}
+      ${s.grade ? `<span class="sc-grade" style="color:${tier.color};border:1px solid currentColor">${esc(s.grade)}</span>` : ""}
+      <span class="sc-name">${esc(s.name)}</span><span class="sc-code">${esc(s.code)}</span>
+      <div class="sc-price"><div class="p">${fmt(s.close)}원</div><div class="d ${ddCls}">고점 대비 ${pct(s.dd)}</div></div>
+    </div>
+    <div class="sc-body">
+      <div class="sc-left">
+        ${maLine}
+        <div class="metric-grid">${metricCells(s)}</div>
+        ${s.read ? `<div class="read-box">${esc(s.read)}</div>` : ""}
+        ${reasons}
+        ${checklist ? `<div class="lv-title">기준 체크리스트</div><div class="check-list">${checklist}</div>` : ""}
+      </div>
+      <div class="sc-right">
+        <div class="lv-title">대응 가격</div>
+        ${(s.levels || []).map(levelRow).join("")}
+      </div>
+    </div>
+    ${s.signal ? `<div class="signal-bar">⚡ ${esc(s.signal)}</div>` : ""}
+  </div>`;
+}
+
+function miniCard(s, tier) {
+  const bits = [];
+  if (s.close != null) bits.push(`현재가 ${fmt(s.close)}원`);
+  if (s.dd != null) bits.push(`고점 대비 ${pct(s.dd)}`);
+  if (s.rsi != null) bits.push(`RSI ${s.rsi.toFixed(1)}`);
+  return `<div class="mini-card">
+    <div class="mini-head">
+      <span class="sc-grade" style="color:${tier.color};border:1px solid currentColor">${tier.key === "wait" ? "조정 진행 중" : "별도 분리"}</span>
+      <span class="sc-name">${esc(s.name)}</span><span class="sc-code">${esc(s.code)}</span>
+      <span class="mini-metrics">${bits.join(" · ")}</span>
+    </div>
+    ${(s.reasons || []).length ? `<ul class="reason-list">${s.reasons.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+    ${s.read ? `<div class="mini-read">${esc(s.read)}</div>` : ""}
+  </div>`;
+}
+
+function render(data) {
+  document.getElementById("nav-date").textContent = "기준일 " + data.asof + " · " + data.universe.label;
+  const t = data.tiers;
+  const sum = [
+    ["스캔 유니버스", data.universe.scanned, "var(--text)"],
+    ["재상승 준비", t.ready.length, "var(--green)"],
+    ["재상승 시동", t.ignited.length, "var(--red)"],
+    ["조정 중·대기", t.wait.length, "var(--gold)"],
+    ["별도 분리", t.excluded.length, "var(--muted)"]
+  ];
+  document.getElementById("summary").innerHTML = sum.map(([l, v, c]) =>
+    `<div class="s-card"><div class="s-label">${l}</div><div class="s-val" style="color:${c}">${v}</div></div>`).join("");
+
+  const app = document.getElementById("app");
+  app.innerHTML = TIERS.map(tier => {
+    const rows = t[tier.key] || [];
+    const cards = rows.map(s =>
+      (s.levels && s.levels.length) ? fullCard(s, tier) : miniCard(s, tier)).join("")
+      || `<div class="mini-card" style="color:var(--muted);font-size:12px">해당 종목 없음</div>`;
+    return `<div class="sec-head">
+        <h2>${tier.title}</h2>
+        <span class="sec-count" style="background:${tier.bg}">${rows.length}</span>
+        <span class="sec-desc">${tier.desc}</span>
+      </div>${cards}`;
+  }).join("");
+}
+
+render(WAVE2_DATA);
+</script>
+</body>
+</html>
