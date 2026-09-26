@@ -88,6 +88,17 @@ body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto 
 .reason-list{font-size:11px;color:var(--muted);line-height:1.7;}
 .reason-list li{margin-left:16px;}
 .mini-read{font-size:11px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--border);line-height:1.6;}
+.regime-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin-bottom:16px;}
+.regime-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:10px;}
+.regime-chip{font-size:11px;font-weight:700;border-radius:12px;padding:3px 10px;white-space:nowrap;border:1px solid currentColor;}
+.regime-name{font-size:13px;font-weight:700;}
+.regime-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.regime-note{font-size:11px;font-weight:600;margin-left:auto;text-align:right;}
+.regime-empty{background:var(--bg2);border:1px dashed var(--border);border-radius:10px;padding:10px 13px;font-size:11px;color:var(--muted);margin-bottom:16px;}
+.regime-empty code,.gate-note code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:10px;}
+.gate-note{margin-top:10px;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 11px;line-height:1.7;}
+.gate-warn{font-size:11px;font-weight:600;color:#8a5a10;background:#FDF3E8;border:1px solid #f3d9b6;border-radius:8px;padding:7px 10px;margin-bottom:12px;}
+.sc-market{font-size:10px;font-weight:700;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:1px 7px;}
 .footer{margin-top:26px;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--muted);line-height:1.8;}
 .footer code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:10px;}
 .up{color:var(--red);}
@@ -119,6 +130,7 @@ body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto 
   </div>
 
   <div class="stat-row" id="summary"></div>
+  <div id="regime"></div>
 
   <div class="panel">
     <div class="panel-title"><span class="dot" style="background:var(--navy)"></span>선별 기준 6가지</div>
@@ -130,6 +142,9 @@ body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto 
       <div class="crit"><div class="crit-num">5</div><div><b>과열 해소</b><span>RSI 45~60 구간</span></div></div>
       <div class="crit"><div class="crit-num">6</div><div><b>반등 트리거</b><span>양봉 전환 또는 단기 고점 돌파 직전</span></div></div>
     </div>
+    <div class="gate-note"><b>시장 국면 게이트</b> — 종목이 속한 지수(KOSPI·KOSDAQ)가 <b>종가 &gt; 20일선 &gt; 60일선</b>이면 우호,
+      <b>종가와 20일선이 모두 60일선 아래</b>면 위험, 그 외는 주의입니다.
+      위험 국면에서는 준비·시동 후보도 '대기'로 강등하고, 주의 국면에서는 비중 축소를 표시합니다.</div>
     <div class="tier-legend">
       <span class="tier-chip" style="color:var(--green)">● 조정 완료·재상승 준비</span>
       <span class="tier-chip" style="color:var(--red)">● 재상승 당일 확인</span>
@@ -141,8 +156,8 @@ body{background:var(--bg);font-family:-apple-system,'Apple SD Gothic Neo','Noto 
   <div id="app"></div>
 
   <div class="footer">
-    <div><b>데이터 갱신</b> — <code>python3 screener/wave2_screener.py --live --top 120 --update-html wave2.html</code> (pykrx 필요: <code>pip install pykrx</code>)</div>
-    <div>오프라인 분석: <code>python3 screener/wave2_screener.py --csv 일봉.csv --name 종목명 --code 코드</code> · 자세한 기준은 <code>screener/README.md</code></div>
+    <div><b>데이터 갱신</b> — <code>python3 screener/wave2_screener.py --live --update-html wave2.html</code> (유동성 순위: <code>pip install pykrx</code> + KRX 로그인 환경변수 <code>KRX_ID</code>·<code>KRX_PW</code>)</div>
+    <div>로그인 없이 지정 종목만: <code>--live --tickers 105560,055550,214450.KQ</code> · 백테스트: <code>--live --backtest --years 3 --sweep</code> · 자세한 내용은 <code>screener/README.md</code></div>
     <div style="margin-top:6px">※ 본 리포트는 투자 판단 참고용 자료이며 특정 종목의 매수·매도 권유가 아닙니다. 투자의 최종 판단과 책임은 투자자 본인에게 있습니다.</div>
   </div>
 </div>
@@ -262,7 +277,15 @@ const TIERS = [
    desc: "바닥 반전형·돌파 추격형·과열 — 이번 선별 대상 아님"}
 ];
 
+const REGIME_STYLE = {
+  favorable: {label: "우호", color: "#3B6D11", bg: "#EAF3E3"},
+  caution:   {label: "주의", color: "#BA7517", bg: "#FBF3E4"},
+  risk_off:  {label: "위험", color: "#A32D2D", bg: "#FCEBEB"},
+  unknown:   {label: "미판정", color: "#888780", bg: "#f4f3ef"}
+};
+
 const fmt = n => n == null ? "—" : Math.round(n).toLocaleString("ko-KR");
+const fmtIdx = n => n == null ? "—" : Number(n).toLocaleString("ko-KR", {maximumFractionDigits: 2});
 const pct = (x, digits = 1) => x == null ? "—" : (x > 0 ? "+" : "") + (x * 100).toFixed(digits) + "%";
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -300,15 +323,20 @@ function fullCard(s, tier) {
       <span>20일 <b>${fmt(s.ma20)}</b></span><span>60일 <b>${fmt(s.ma60)}</b></span><span>120일 <b>${fmt(s.ma120)}</b></span></div>` : "";
   const reasons = (s.reasons || []).length && tier.key === "wait"
     ? `<ul class="reason-list">${s.reasons.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : "";
+  const gateMsgs = (s.reasons || []).filter(r => r.startsWith("시장 국면"));
+  const gateBox = gateMsgs.length && tier.key !== "wait"
+    ? `<div class="gate-warn">⚠ ${esc(gateMsgs.join(" / "))}</div>` : "";
   return `<div class="stock-card${tier.key === "ready" ? " hl" : ""}">
     <div class="sc-head">
       ${s.rank ? `<span class="sc-rank">${esc(s.rank)}</span>` : ""}
       ${s.grade ? `<span class="sc-grade" style="color:${tier.color};border:1px solid currentColor">${esc(s.grade)}</span>` : ""}
       <span class="sc-name">${esc(s.name)}</span><span class="sc-code">${esc(s.code)}</span>
+      ${s.market ? `<span class="sc-market">${esc(s.market)}</span>` : ""}
       <div class="sc-price"><div class="p">${fmt(s.close)}원</div><div class="d ${ddCls}">고점 대비 ${pct(s.dd)}</div></div>
     </div>
     <div class="sc-body">
       <div class="sc-left">
+        ${gateBox}
         ${maLine}
         <div class="metric-grid">${metricCells(s)}</div>
         ${s.read ? `<div class="read-box">${esc(s.read)}</div>` : ""}
@@ -340,8 +368,28 @@ function miniCard(s, tier) {
   </div>`;
 }
 
+function renderRegime(reg) {
+  const box = document.getElementById("regime");
+  const rows = reg ? Object.values(reg) : [];
+  if (!rows.length) {
+    box.innerHTML = `<div class="regime-empty">시장 국면: 미판정 — 스크리너를 <code>--live</code>로 실행하면 KOSPI·KOSDAQ 국면(우호·주의·위험)이 여기에 표시됩니다.</div>`;
+    return;
+  }
+  box.innerHTML = `<div class="regime-row">${rows.map(r => {
+    const st = REGIME_STYLE[r.state] || REGIME_STYLE.unknown;
+    const meta = r.close != null
+      ? `종가 ${fmtIdx(r.close)} · 20일선 ${fmtIdx(r.ma20)} · 60일선 ${fmtIdx(r.ma60)}` : "";
+    return `<div class="regime-card">
+      <span class="regime-chip" style="color:${st.color};background:${st.bg}">${st.label}</span>
+      <div><div class="regime-name">${esc(r.name)} 시장 국면</div><div class="regime-meta">${meta}</div></div>
+      <div class="regime-note" style="color:${st.color}">${esc(r.note || "")}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
 function render(data) {
   document.getElementById("nav-date").textContent = "기준일 " + data.asof + " · " + data.universe.label;
+  renderRegime(data.regime);
   const t = data.tiers;
   const sum = [
     ["스캔 유니버스", data.universe.scanned, "var(--text)"],
